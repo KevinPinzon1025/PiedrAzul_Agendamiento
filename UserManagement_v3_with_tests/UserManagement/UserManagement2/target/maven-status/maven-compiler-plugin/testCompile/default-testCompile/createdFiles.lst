@@ -1,0 +1,4 @@
+co\unicauca\usermanagement\service\PasswordPolicyTest.class
+co\unicauca\usermanagement\service\UserServiceTest$InMemoryUserRepository.class
+co\unicauca\usermanagement\service\UserServiceTest.class
+co\unicauca\usermanagement\service\PasswordHasherTest.class

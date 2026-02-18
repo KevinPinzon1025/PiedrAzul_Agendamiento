@@ -1,0 +1,13 @@
+co\unicauca\usermanagement\acces\IUserRepository.class
+co\unicauca\usermanagement\view\LoginFrame.class
+co\unicauca\usermanagement\main\ClientMain.class
+co\unicauca\usermanagement\User.class
+co\unicauca\usermanagement\acces\Factory.class
+co\unicauca\usermanagement\service\PasswordPolicy.class
+co\unicauca\usermanagement\view\MenuFrame.class
+co\unicauca\usermanagement\view\StartFrame.class
+co\unicauca\usermanagement\acces\UserRepositorySqlite.class
+co\unicauca\usermanagement\service\UserService.class
+co\unicauca\usermanagement\service\PasswordHasher.class
+co\unicauca\usermanagement\view\RegisterFrame.class
+co\unicauca\usermanagement\view\UIStyles.class
