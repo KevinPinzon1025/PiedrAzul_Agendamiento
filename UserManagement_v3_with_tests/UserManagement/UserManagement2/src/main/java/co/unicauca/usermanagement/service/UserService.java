@@ -1,5 +1,8 @@
+//revisar el constructor de admin, esta viene siendo una clase legada
+
 package co.unicauca.usermanagement.service;
 
+import co.unicauca.usermanagement.Administrator;
 import co.unicauca.usermanagement.User;
 import co.unicauca.usermanagement.acces.IUserRepository;
 
@@ -22,7 +25,7 @@ public class UserService {
         String salt = PasswordHasher.newSaltBase64();
         String hash = PasswordHasher.hashBase64(passwordPlain.toCharArray(), salt);
 
-        User user = new User(login.trim(), fullName.trim(), role, active, hash, salt);
+        User user = new Administrator(login.trim(), fullName.trim(), role, active, hash, salt);
         return repository.save(user);
     }
 

@@ -1,3 +1,9 @@
+/*
+
+hay que refactorizar para que cada clase que implementa la interfaz 
+segun las necesidades del dominio que esta guardando
+
+*/
 package co.unicauca.usermanagement.acces;
 
 import co.unicauca.usermanagement.User;
@@ -57,8 +63,8 @@ public class UserRepositorySqlite implements IUserRepository {
         String sql = "INSERT INTO User (login, fullName, role, active, passwordHash, passwordSalt) VALUES (?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, user.getLogin());
-            ps.setString(2, user.getFullName());
-            ps.setString(3, user.getRole());
+            ps.setString(2, user.getFirstName());
+        //    ps.setString(3, user.getRole());
             ps.setInt(4, user.isActive() ? 1 : 0);
             ps.setString(5, user.getPasswordHash());
             ps.setString(6, user.getPasswordSalt());

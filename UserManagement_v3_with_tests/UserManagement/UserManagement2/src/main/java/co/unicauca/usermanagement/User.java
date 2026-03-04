@@ -1,22 +1,32 @@
 package co.unicauca.usermanagement;
 
-public class User {
+public abstract class User {
+    private double idUser;
     private String login;
-    private String fullName;
-    private String role;       // "Médico/Terapista", "Agendador de citas", "Administrador"
-    private boolean active;    // true=Activo, false=Inactivo
     private String passwordHash;
     private String passwordSalt; // NUEVO (Base64)
-
+    private boolean active;    // true=Activo, false=Inactivo
+    private String firstName;
+    private String firstLastName;
+    
     public User() {}
 
-    public User(String login, String fullName, String role, boolean active, String passwordHash, String passwordSalt) {
+    public User(double idUser, String login, String passwordHash, String passwordSalt, boolean active, String firstName, String firstLastName) {
+        this.idUser = idUser;
         this.login = login;
-        this.fullName = fullName;
-        this.role = role;
-        this.active = active;
         this.passwordHash = passwordHash;
         this.passwordSalt = passwordSalt;
+        this.active = active;
+        this.firstName = firstName;
+        this.firstLastName = firstLastName;
+    }
+
+    public double getIdUser() {
+        return idUser;
+    }
+
+    public void setIdUser(double idUser) {
+        this.idUser = idUser;
     }
 
     public String getLogin() {
@@ -27,20 +37,20 @@ public class User {
         this.login = login;
     }
 
-    public String getFullName() {
-        return fullName;
+    public String getPasswordHash() {
+        return passwordHash;
     }
 
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
 
-    public String getRole() {
-        return role;
+    public String getPasswordSalt() {
+        return passwordSalt;
     }
 
-    public void setRole(String role) {
-        this.role = role;
+    public void setPasswordSalt(String passwordSalt) {
+        this.passwordSalt = passwordSalt;
     }
 
     public boolean isActive() {
@@ -51,24 +61,25 @@ public class User {
         this.active = active;
     }
 
-    public String getPasswordHash() {
-        return passwordHash;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
-    }  
-   
-    public String getPasswordSalt() {
-        return passwordSalt; 
-    }
-    
-    public void setPasswordSalt(String passwordSalt) {
-        this.passwordSalt = passwordSalt; 
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 
+    public String getFirstLastName() {
+        return firstLastName;
+    }
+
+    public void setFirstLastName(String firstLastName) {
+        this.firstLastName = firstLastName;
+    }
+/*
     @Override
     public String toString() {
         return login + " | " + fullName + " | " + role + " | " + (active ? "Activo" : "Inactivo");
     }
+*/
 }
