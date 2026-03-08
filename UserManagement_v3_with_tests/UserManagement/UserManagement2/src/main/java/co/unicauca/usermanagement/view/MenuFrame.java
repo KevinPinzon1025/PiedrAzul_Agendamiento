@@ -1,7 +1,16 @@
+/*
+
+- que piensan de dividir esta ventana menu? es decir, aqui esta la logica de todos los menus de todos los usuarios
+ posibles, pero, no seria mas viable crear una ventana menu para cada usuario y segun sea el caso llamarla desde el login?
+*/
 package co.unicauca.usermanagement.view;
 
+import co.unicauca.usermanagement.Administrator;
+import co.unicauca.usermanagement.Patient;
+import co.unicauca.usermanagement.Professional;
+import co.unicauca.usermanagement.Scheduler;
 import co.unicauca.usermanagement.User;
-import co.unicauca.usermanagement.service.UserService;
+import co.unicauca.usermanagement.service.UserServiceFacade;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -14,7 +23,7 @@ import javax.swing.SwingConstants;
 
 public class MenuFrame extends JFrame {
 
-    public MenuFrame(User user, UserService service) {
+    public MenuFrame(User user, UserServiceFacade service) {
 
         setTitle("Menú Principal");
         setSize(800, 500);
@@ -25,8 +34,17 @@ public class MenuFrame extends JFrame {
         JLabel lblTitle = new JLabel("Menú Principal", SwingConstants.CENTER);
         lblTitle.setFont(UIStyles.FONT_TITLE);
 
-        JLabel lblWelcome = new JLabel("Bienvenido: " + user.getFullName(), SwingConstants.CENTER);
-        JLabel lblRole = new JLabel("Rol: " + user.getRole(), SwingConstants.CENTER);
+        JLabel lblWelcome = new JLabel("Bienvenido: " + user.getFirstName(), SwingConstants.CENTER);
+        
+        //mientras tanto...
+        String role = "";
+        if(user instanceof Administrator) role = "Administrador";
+        else if(user instanceof Patient) role = "Paciente";
+        else if(user instanceof Professional) role = "Profesional";
+        else if(user instanceof Scheduler) role = "Agendador de citas";
+                
+        
+        JLabel lblRole = new JLabel("Rol: " + role, SwingConstants.CENTER);
 
         JPanel topPanel = new JPanel(new GridLayout(0,1,0,10));
         topPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
@@ -38,7 +56,7 @@ public class MenuFrame extends JFrame {
         JPanel actionsPanel = new JPanel(new GridLayout(0,1,20,20));
         actionsPanel.setBorder(BorderFactory.createEmptyBorder(20, 150, 20, 150));
 
-        switch (user.getRole()) {
+        switch (role) {
 
             case "Administrador" -> {
                 JButton btnManage = new JButton("Gestionar usuarios");

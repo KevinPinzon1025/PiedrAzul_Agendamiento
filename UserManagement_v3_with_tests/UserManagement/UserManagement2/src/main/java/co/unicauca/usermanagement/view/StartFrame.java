@@ -1,6 +1,7 @@
 package co.unicauca.usermanagement.view;
 
-import co.unicauca.usermanagement.service.UserService;
+import co.unicauca.usermanagement.service.AdminServiceImpl;
+import co.unicauca.usermanagement.service.UserServiceFacade;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -12,9 +13,9 @@ import javax.swing.JPanel;
 
 public class StartFrame extends JFrame {
 
-    private final UserService service;
+    private UserServiceFacade service;
     
-    public StartFrame(UserService service) {
+    public StartFrame(UserServiceFacade service) {
         this.service = service;
         initComponents();
     }
@@ -42,7 +43,7 @@ public class StartFrame extends JFrame {
         });
 
         btnRegister.addActionListener(e -> {
-            new RegisterFrame(service, this).setVisible(true);
+            new RegisterFrame(service.getSchedulerService(), this).setVisible(true);
             setVisible(false);
         });
 

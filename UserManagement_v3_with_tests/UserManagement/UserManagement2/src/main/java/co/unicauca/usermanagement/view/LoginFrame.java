@@ -1,7 +1,8 @@
 package co.unicauca.usermanagement.view;
 
 import co.unicauca.usermanagement.User;
-import co.unicauca.usermanagement.service.UserService;
+import co.unicauca.usermanagement.service.AdminServiceImpl;
+import co.unicauca.usermanagement.service.UserServiceFacade;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -18,10 +19,10 @@ import javax.swing.JTextField;
 
 public class LoginFrame extends JFrame {
 
-    private final UserService service;
+    private final UserServiceFacade service; 
     private final JFrame previous;
 
-    public LoginFrame(UserService service, JFrame previous) {
+    public LoginFrame(UserServiceFacade service, JFrame previous) {
         this.service = service;
         this.previous = previous;
         initComponents();

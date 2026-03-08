@@ -1,5 +1,6 @@
 package co.unicauca.usermanagement.service;
 
+import co.unicauca.usermanagement.Administrator;
 import co.unicauca.usermanagement.User;
 import co.unicauca.usermanagement.acces.IUserRepository;
 import java.util.HashMap;
@@ -35,31 +36,45 @@ public class UserServiceTest {
     @Test
     void shouldNotAllowDuplicateLogin() {
         IUserRepository repo = new InMemoryUserRepository();
-        UserService service = new UserService(repo);
+        AdminServiceImpl service = new AdminServiceImpl(repo);
 
+        double idAdmin = 1001;
         String login = "kevin";
-        String fullName = "Kevin Santiago";
-        String role = "ADMIN";
+        String firstName = "Kevin";
+        String firstLastName = "Santiago";
         boolean active = true;
         String password = "Abc123!";
-
-        boolean first = service.register(login, fullName, role, active, password);
+        
+        Administrator admin1 = new Administrator(idAdmin, login, password, password, active, firstName, firstLastName);
+        Administrator admin2 = new Administrator(1002, login, password, password, active, firstName, firstLastName);
+        
+        boolean first = service.register(admin1);
         assertTrue(first);
 
-        boolean second = service.register(login, "Otro Nombre", "USER", true, password);
+        boolean second = service.register(admin2);
         assertFalse(second);
     }
     
     @Test
     void shouldTreatTrimmedLoginAsSameUser() {
         IUserRepository repo = new InMemoryUserRepository();
-        UserService service = new UserService(repo);
-
-        boolean first = service.register("kevin", "Kevin", "ADMIN", true, "Abc123!");
+        AdminServiceImpl service = new AdminServiceImpl(repo);
+        
+        double idAdmin = 1001;
+        String login = "kevin";
+        String firstName = "Kevin";
+        String firstLastName = "Santiago";
+        boolean active = true;
+        String password = "Abc123!";
+        
+        Administrator admin1 = new Administrator(idAdmin, login, password, password, active, firstName, firstLastName);
+        Administrator admin2 = admin1;
+        admin2.setLogin("   kevin   ");
+        boolean first = service.register(admin1);
         assertTrue(first);
 
         // mismo login pero con espacios    
-        boolean second = service.register("  kevin  ", "Otro", "USER", true, "Abc123!");
+        boolean second = service.register(admin2);
         assertFalse(second);
     }
 }

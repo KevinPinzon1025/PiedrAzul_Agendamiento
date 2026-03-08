@@ -1,7 +1,13 @@
-package co.unicauca.usermanagement.view;
+package /*
+        AQUI HAY DATOS QUEMADOS SOLO PARA QUE DEJE COMPILAR
+        
+        */
+        co.unicauca.usermanagement.view;
 
+import co.unicauca.usermanagement.Scheduler;
 import co.unicauca.usermanagement.service.PasswordPolicy;
-import co.unicauca.usermanagement.service.UserService;
+import co.unicauca.usermanagement.service.IPatientService;
+import co.unicauca.usermanagement.service.ISchedulerService;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -17,10 +23,10 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
 public class RegisterFrame extends JFrame {
-    private final UserService service;
+    private final ISchedulerService service; 
     private final JFrame previous;
 
-    public RegisterFrame(UserService service, JFrame previous) {
+    public RegisterFrame(ISchedulerService service, JFrame previous) {
         this.service = service;
         this.previous = previous;
         initComponents();
@@ -104,8 +110,10 @@ public class RegisterFrame extends JFrame {
                 JOptionPane.showMessageDialog(this, PasswordPolicy.errorMessage(), "Validación", JOptionPane.WARNING_MESSAGE);
                 return;
             }
-
-            boolean ok = service.register(login, fullName, role, active, p1);
+            
+            //datos quemados para que deje compilar
+            Scheduler scheduler = new Scheduler(1001, "sch001", "1010", "2020",true, "Alan", "Brito");
+            boolean ok = service.register(scheduler);
             if (ok) {
                 JOptionPane.showMessageDialog(this, "Usuario registrado correctamente.", "Listo", JOptionPane.INFORMATION_MESSAGE);
                 dispose();

@@ -14,9 +14,22 @@ public class Factory {
     }
 
     public IUserRepository getRepository(String type) {
-        if ("sqlite".equals(type)) {
-            return new UserRepositorySqlite();
+        
+        switch(type){
+            case "admin" -> {
+                return new AdminRepositorySql();
+            }
+            case "scheduler" -> {
+                return new SchedulerRepositorySQL();
+            }
+            case "professional" -> {
+                return new ProfessionalRepositorySQL();
+            }
+            case "patient" -> {
+                return new PatientRepositorySQL();
+            }
         }
+       
         return null;
     }
 }
