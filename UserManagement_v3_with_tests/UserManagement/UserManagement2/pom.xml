@@ -21,6 +21,27 @@
 
     <dependencies>
         
+         
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.17.3</version>
+        </dependency>
+
+        <!-- Jackson Core (opcional, pero recomendado) -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.17.3</version>
+        </dependency>
+
+        <!-- Jackson Annotations (opcional, pero recomendado) -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.17.3</version>
+        </dependency>
+        
         <dependency>
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
@@ -39,7 +60,7 @@
             <version>2.0.12</version>
         </dependency>
 
-        <!-- ✅ TESTS: JUnit 5 -->
+        <!--  TESTS: JUnit 5 -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
@@ -52,17 +73,53 @@
             <version>1.0-SNAPSHOT</version>
             <type>jar</type>
         </dependency>
+        
+        <dependency>
+            <groupId>co.unicauca</groupId>
+            <artifactId>report-json-plugin</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <type>jar</type>
+        </dependency>
+        
+        
     </dependencies>
 
     <build>
         <plugins>
-            <!-- ✅ Necesario para ejecutar JUnit 5 con mvn test / NetBeans -->
+            <!--  Necesario para ejecutar JUnit 5 con mvn test / NetBeans -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.5</version>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.5.0</version>
+
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+
+                        <configuration>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>co.unicauca.usermanagement.main.ClientMain</mainClass>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+
+                    </execution>
+                </executions>
+
+            </plugin>
+
         </plugins>
+   
     </build>
 
     <name>UserManagement</name>
