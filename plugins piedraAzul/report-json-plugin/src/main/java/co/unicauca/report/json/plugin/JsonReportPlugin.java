@@ -1,6 +1,7 @@
 
 package co.unicauca.report.json.plugin;
 
+import co.unicauca.microkernel.piedaazul.common.entity.ApointmentDTO;
 import co.unicauca.microkernel.piedaazul.common.entity.AppointmentEntity;
 import co.unicauca.microkernel.piedraazul.common.interfaz.IReportPlugin;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,7 +15,7 @@ import java.util.List;
 public class JsonReportPlugin implements IReportPlugin {
 
     @Override //un cambio en lo que dice la guia para que se genere un archivo directamente
-    public void generateReport(List<AppointmentEntity> data, String fileName) {
+    public void generateReport(List<ApointmentDTO> data, String fileName) {
         try {
             ObjectMapper mapper = new ObjectMapper();
             mapper.registerModule(new JavaTimeModule());

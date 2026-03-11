@@ -6,48 +6,39 @@ import java.time.LocalDateTime;
 /**
  *
  * @author Sam
+ * @brief Esta clase se usa para transferir los datos a traves de los pipelines
+ *        no se usa para logica de negocio, solo para facilitar la generacion de 
+ *        los reportes
  */
-public class AppointmentEntity {
-    private LocalDateTime schedulingDate;
-    private LocalDateTime appointmenDate;
+public class ApointmentDTO {
+    private String schedulingDate;
+    private String appointmenDate;
     private String observation;
     private String scheduler;
     private String patient;
     private String professional;
-    private long cedPatient;
+    private String cedPatient;
+
+   
     
     //constructor sin parametros
 
-    public AppointmentEntity() {
+    public ApointmentDTO() {
     }
-    
-    //constructor con parametros
 
-    public AppointmentEntity(LocalDateTime schedulingDate, LocalDateTime appointmenDate, String observation, String scheduler, String patient, String professional, long cedPatient) {
-        this.schedulingDate = schedulingDate;
-        this.appointmenDate = appointmenDate;
-        this.observation = observation;
-        this.scheduler = scheduler;
-        this.patient = patient;
-        this.professional = professional;
-        this.cedPatient = cedPatient;
-    }
-    
-    //getters & setters
-
-    public LocalDateTime getSchedulingDate() {
+    public String getSchedulingDate() {
         return schedulingDate;
     }
 
-    public void setSchedulingDate(LocalDateTime schedulingDate) {
+    public void setSchedulingDate(String schedulingDate) {
         this.schedulingDate = schedulingDate;
     }
 
-    public LocalDateTime getAppointmenDate() {
+    public String getAppointmenDate() {
         return appointmenDate;
     }
 
-    public void setAppointmenDate(LocalDateTime appointmenDate) {
+    public void setAppointmenDate(String appointmenDate) {
         this.appointmenDate = appointmenDate;
     }
 
@@ -82,13 +73,14 @@ public class AppointmentEntity {
     public void setProfessional(String professional) {
         this.professional = professional;
     }
-
-    public long getCedPatient() {
+    
+    public String getCedPatient() {
         return cedPatient;
     }
 
-    public void setCedPatient(long cedPatient) {
+    public void setCedPatient(String cedPatient) {
         this.cedPatient = cedPatient;
     }
+
     
 }

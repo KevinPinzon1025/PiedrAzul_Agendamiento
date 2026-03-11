@@ -53,6 +53,8 @@ public class Console {
 
         List<AppointmentEntity> appointments = appointmentService.getAll();
         
+        
+        
         scanner.nextLine();
         
         System.out.println("Formato al cual se exportaran los datos: ");

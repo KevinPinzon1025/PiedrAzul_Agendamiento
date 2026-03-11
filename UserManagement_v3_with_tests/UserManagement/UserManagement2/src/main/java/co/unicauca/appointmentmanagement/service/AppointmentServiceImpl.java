@@ -19,9 +19,9 @@ public class AppointmentServiceImpl implements IAppointmentService {
         /*
          * Para este ejemplo, se crearán objetos de prueba directamente aquí.
          * */
-        AppointmentEntity appointmentOne = new AppointmentEntity(LocalDateTime.of(2026,02,14,8,30), LocalDateTime.of(2026,04,01,10,45), "Dolor de cabeza", "Sch Juan Perez", "pat. Alan Brito", "Dr. Jose Ignacio");
-        AppointmentEntity appointmentTwo = new AppointmentEntity(LocalDateTime.of(2026,01,1,9,00), LocalDateTime.of(2026,04,02,11,35), "Dolor de estomago", "Sch Juan Perez", "pat. Pedro Medina", "Dr. Ibis Gonzales");
-        AppointmentEntity appointmentThree = new AppointmentEntity(LocalDateTime.of(2026,02,23,10,20), LocalDateTime.of(2026,04,03,9,15), "Fractura de brazo", "Sch Juan Perez", "pat. Eduardo Santos", "Dr. Clara Ines");
+        AppointmentEntity appointmentOne = new AppointmentEntity(LocalDateTime.of(2026,02,14,8,30), LocalDateTime.of(2026,04,01,10,45), "Dolor de cabeza", "Sch Juan Perez", "pat. Alan Brito", "Dr. Jose Ignacio",1059237786);
+        AppointmentEntity appointmentTwo = new AppointmentEntity(LocalDateTime.of(2026,01,1,9,00), LocalDateTime.of(2026,04,02,11,35), "Dolor de estomago", "Sch Juan Perez", "pat. Pedro Medina", "Dr. Ibis Gonzales",105896324);
+        AppointmentEntity appointmentThree = new AppointmentEntity(LocalDateTime.of(2026,02,23,10,20), LocalDateTime.of(2026,04,03,9,15), "Fractura de brazo", "Sch Juan Perez", "pat. Eduardo Santos", "Dr. Clara Ines",1059237269);
 
 
         appointments.add(appointmentOne);
