@@ -23,7 +23,7 @@ public class CedulaFormatter implements PipelineStage {
                 processedDTO.get(i).setCedPatient(formattedCedula); 
             }
         }
-        return appointmentsDTO;
+        return processedDTO;
     }
     
 }

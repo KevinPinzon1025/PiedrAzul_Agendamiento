@@ -24,15 +24,10 @@ public class PluginStage implements PipelineStage {
         IReportPlugin plugin = manager.getReportPlugin(input.getFormat());
 
         if (plugin == null) {
-            try {
-                throw new Exception("No hay un plugin disponible para el formato indicado: " + input.getFormat());
-            } catch (Exception ex) {
-                Logger.getLogger(PluginStage.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            throw new IllegalArgumentException("No hay un plugin disponible para el formato indicado: " + input.getFormat());
         }
-        
+
         plugin.generateReport(processedDTO, input.getFileName());
-        return appointmentsDTO;
+        return processedDTO;
     }
-    
 }

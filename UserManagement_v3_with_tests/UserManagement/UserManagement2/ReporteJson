@@ -1,0 +1,25 @@
+[ {
+  "schedulingDate" : "14-feb-2026",
+  "appointmenDate" : "01-abr-2026",
+  "observation" : "Dolor de cabeza",
+  "scheduler" : "Sch Juan Perez",
+  "patient" : "Pat.AlanBrito",
+  "professional" : "Dr.JoseIgnacio",
+  "cedPatient" : "1.059.237.786"
+}, {
+  "schedulingDate" : "01-ene-2026",
+  "appointmenDate" : "02-abr-2026",
+  "observation" : "Dolor de estomago",
+  "scheduler" : "Sch Juan Perez",
+  "patient" : "Pat.PedroMedina",
+  "professional" : "Dr.IbisGonzales",
+  "cedPatient" : "105896324"
+}, {
+  "schedulingDate" : "23-feb-2026",
+  "appointmenDate" : "03-abr-2026",
+  "observation" : "Fractura de brazo",
+  "scheduler" : "Sch Juan Perez",
+  "patient" : "Pat.EduardoSantos",
+  "professional" : "Dr.ClaraInes",
+  "cedPatient" : "1.059.237.269"
+} ]

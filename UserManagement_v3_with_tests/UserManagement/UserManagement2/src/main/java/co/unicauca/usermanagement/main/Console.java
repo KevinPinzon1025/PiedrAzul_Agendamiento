@@ -57,8 +57,24 @@ public class Console {
         
         scanner.nextLine();
         
-        System.out.println("Formato al cual se exportaran los datos: ");
-        String format = scanner.nextLine();
+        System.out.println("Formato al cual se exportaran los datos:");
+        System.out.println("1. JSON");
+        System.out.println("2. HTML");
+
+        String option = scanner.nextLine();
+        String format = "";
+
+        switch(option){
+            case "1":
+                format = "json";
+                break;
+            case "2":
+                format = "html";
+                break;
+            default:
+                System.out.println("Formato inválido");
+                return;
+        }
         
         System.out.println("Nombre del archivo: ");
         String fileName = scanner.nextLine();

@@ -1,4 +1,3 @@
-
 package co.unicauca.pipeline.stages;
 
 import co.unicauca.microkernel.piedaazul.common.entity.AppointmentEntity;
@@ -7,16 +6,12 @@ import co.unicauca.microkernel.piedaazul.common.entity.ApointmentDTO;
 import co.unicauca.pipeline.interfaz.PipelineStage;
 import java.util.List;
 
-/**
- *
- * @author Sam
- */
 public class TransformCamelCaseDoctorStage implements PipelineStage {
 
     @Override
     public List<ApointmentDTO> process(List<ApointmentDTO> appointmentsDTO, List<AppointmentEntity> appointments, Report input) {
         List<ApointmentDTO> processedDTO = appointmentsDTO;
-        for (int i=0;i<appointments.size();i++) {
+        for (int i = 0; i < appointments.size(); i++) {
             String doctorName = appointments.get(i).getProfessional();
             if (doctorName != null) {
                 String[] words = doctorName.split(" ");
@@ -25,10 +20,9 @@ public class TransformCamelCaseDoctorStage implements PipelineStage {
                     camelCaseName.append(word.substring(0, 1).toUpperCase())
                                  .append(word.substring(1).toLowerCase());
                 }
-                processedDTO.get(i).setPatient(camelCaseName.toString()); 
+                processedDTO.get(i).setProfessional(camelCaseName.toString());
             }
         }
         return processedDTO;
     }
-    
 }

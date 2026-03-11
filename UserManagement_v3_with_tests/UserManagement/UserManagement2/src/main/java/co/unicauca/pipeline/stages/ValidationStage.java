@@ -14,12 +14,23 @@ import java.util.List;
 public class ValidationStage implements PipelineStage {
 
     @Override
-    public List<ApointmentDTO> process(List<ApointmentDTO> appointmentsDTO, List<AppointmentEntity> appointments, Report input) {
-       List<ApointmentDTO> processedDTO = appointmentsDTO;
-       if (appointments == null || appointments.isEmpty()) {
+    public List<ApointmentDTO> process(List<ApointmentDTO> appointmentsDTO, 
+                                       List<AppointmentEntity> appointments, 
+                                       Report input) {
+
+        if (appointments == null || appointments.isEmpty()) {
             throw new IllegalArgumentException("La lista de citas está vacía");
         }
-       return processedDTO;
+
+        for (int i = 0; i < appointments.size(); i++) {
+
+            AppointmentEntity appointment = appointments.get(i);
+            ApointmentDTO dto = appointmentsDTO.get(i);
+
+            dto.setObservation(appointment.getObservation());
+            dto.setScheduler(appointment.getScheduler());
+        }
+
+        return appointmentsDTO;
     }
-    
 }
