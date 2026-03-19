@@ -1,4 +1,3 @@
-
 package co.unicauca.appointmentmanagement;
 
 import co.unicauca.usermanagement.Patient;
@@ -8,7 +7,7 @@ import java.time.LocalDateTime;
 
 /**
  *
- * @author Sam
+ * @author Sam, Kevin
  */
 public class Appointment {
     private LocalDateTime schedulingDate;
@@ -17,15 +16,12 @@ public class Appointment {
     private Scheduler scheduler;
     private Patient patient;
     private Professional professional;
-    
-    //constructor sin parametros
 
     public Appointment() {
     }
-    
-    //constructor con parametros
 
-    public Appointment(LocalDateTime schedulingDate, LocalDateTime appointmenDate, String observation, Scheduler scheduler, Patient patient, Professional professional) {
+    public Appointment(LocalDateTime schedulingDate, LocalDateTime appointmenDate, String observation,
+            Scheduler scheduler, Patient patient, Professional professional) {
         this.schedulingDate = schedulingDate;
         this.appointmenDate = appointmenDate;
         this.observation = observation;
@@ -33,8 +29,6 @@ public class Appointment {
         this.patient = patient;
         this.professional = professional;
     }
-    
-    //getters & setters
 
     public LocalDateTime getSchedulingDate() {
         return schedulingDate;
@@ -83,5 +77,16 @@ public class Appointment {
     public void setProfessional(Professional professional) {
         this.professional = professional;
     }
-    
+
+    @Override
+    public String toString() {
+        return "Appointment{" +
+                "schedulingDate=" + schedulingDate +
+                ", appointmenDate=" + appointmenDate +
+                ", observation='" + observation + '\'' +
+                ", scheduler=" + scheduler +
+                ", patient=" + patient +
+                ", professional=" + professional +
+                '}';
+    }
 }
