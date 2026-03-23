@@ -2,19 +2,25 @@ package co.unicauca.usermanagement.main;
 
 import co.unicauca.appointmentmanagement.Appointment;
 import co.unicauca.appointmentmanagement.service.AppointmentDirector;
+import co.unicauca.appointmentmanagement.service.AppointmentServiceImpl;
+import co.unicauca.appointmentmanagement.service.IAppointmentService;
 import co.unicauca.appointmentmanagement.service.ManualAppointmentBuilder;
 import co.unicauca.appointmentmanagement.service.RescheduleAppointmentBuilder;
 import co.unicauca.appointmentmanagement.service.SelfServiceAppointmentBuilder;
 import co.unicauca.usermanagement.Patient;
 import co.unicauca.usermanagement.Professional;
 import co.unicauca.usermanagement.Scheduler;
+import co.unicauca.usermanagement.view.SearchAppointmentFrame;
 import java.time.format.DateTimeFormatter;
 import java.time.LocalDateTime;
 import java.util.Date;
+import javafx.application.Application;
+
 
 public class ClientMain {
 
     public static void main(String[] args) {
+        Application.launch(SearchAppointmentFrame.class, args);
 
         AppointmentDirector director = new AppointmentDirector();
 
