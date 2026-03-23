@@ -1,6 +1,7 @@
 package co.unicauca.appointmentmanagement.service;
 
 import co.unicauca.microkernel.piedaazul.common.entity.AppointmentEntity;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,5 +49,38 @@ public class AppointmentServiceImpl implements IAppointmentService {
         appointments.add(appointmentThree);
 
         return appointments;
+    }
+    
+    @Override
+    public List<AppointmentEntity> findByProfessionalAndDate(String professional, LocalDate date) {
+
+        List<AppointmentEntity> result = new ArrayList<>();
+
+        for (AppointmentEntity ap : getAll()) {
+
+            boolean sameProfessional = ap.getProfessional().equalsIgnoreCase(professional);
+
+            boolean sameDate = ap.getAppointmenDate().toLocalDate().equals(date);
+
+            if (sameProfessional && sameDate) {
+                result.add(ap);
+            }
+        }
+
+        return result;
+    }
+    
+    @Override
+    public List<String> getAllProfessionals() {
+
+        List<String> professionals = new ArrayList<>();
+
+        for (AppointmentEntity ap : getAll()) {
+            if (!professionals.contains(ap.getProfessional())) {
+                professionals.add(ap.getProfessional());
+            }
+        }
+
+        return professionals;
     }
 }
