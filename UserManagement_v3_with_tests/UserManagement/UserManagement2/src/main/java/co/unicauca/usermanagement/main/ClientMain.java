@@ -21,7 +21,7 @@ import javafx.application.Application;
 public class ClientMain {
 
     public static void main(String[] args) {
-        Application.launch(SearchAppointmentFrame.class, args);
+        Application.launch(ScheduleAppointmentFrame.class, args);
 
         AppointmentDirector director = new AppointmentDirector();
 
