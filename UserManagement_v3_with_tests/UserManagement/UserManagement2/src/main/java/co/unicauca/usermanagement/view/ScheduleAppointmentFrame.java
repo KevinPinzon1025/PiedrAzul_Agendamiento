@@ -21,9 +21,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import co.unicauca.usermanagement.main.ClientMain;
+
 public class ScheduleAppointmentFrame extends Application {
 
-    private final IAppointmentService appointmentService = new AppointmentServiceImpl();
+    private IAppointmentService service;
 
     private ComboBox<String> cbPatient;
     private ComboBox<String> cbProfessional;
@@ -34,6 +36,7 @@ public class ScheduleAppointmentFrame extends Application {
 
     @Override
     public void start(Stage stage) {
+        this.service = ClientMain.service;
         BorderPane root = new BorderPane();
         root.setStyle("-fx-background-color: #f4f6fb;");
 
@@ -158,13 +161,13 @@ public class ScheduleAppointmentFrame extends Application {
 
     private void btnInitData() {
         // Cargar profesionales de la lógica existente
-        List<String> professionals = appointmentService.getAllProfessionals();
+        List<String> professionals = service.getAllProfessionals();
         cbProfessional.getItems().clear();
         cbProfessional.getItems().addAll(professionals);
 
         // Cargar pacientes desde la tabla de citas (necesita lógica de negocio real que recupere pacientes
         // en el futuro, por ahora se usa la información de citas ya creadas)
-        Set<String> uniquePatients = appointmentService.getAll().stream()
+        Set<String> uniquePatients = service.getAll().stream()
                 .map(AppointmentEntity::getPatient)
                 .collect(Collectors.toSet());
         cbPatient.getItems().clear();
@@ -186,7 +189,7 @@ public class ScheduleAppointmentFrame extends Application {
         //  cbTime.getItems().setAll(availableHours);
 
         // Grabamos los horarios ocupados de las citas existentes
-        List<AppointmentEntity> booked = appointmentService.findByProfessionalAndDate(professional, date);
+        List<AppointmentEntity> booked = service.findByProfessionalAndDate(professional, date);
         Set<String> occupied = booked.stream()
                 .map(a -> a.getAppointmenDate().toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm")))
                 .collect(Collectors.toSet());

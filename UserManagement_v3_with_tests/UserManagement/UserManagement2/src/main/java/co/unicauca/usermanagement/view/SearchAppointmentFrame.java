@@ -23,9 +23,11 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Arrays;
 
+import co.unicauca.usermanagement.main.ClientMain;
+
 public class SearchAppointmentFrame extends Application {
 
-    private final IAppointmentService service = new AppointmentServiceImpl();
+    private IAppointmentService service;
     
 
     private TableView<AppointmentEntity> table;
@@ -57,6 +59,8 @@ public class SearchAppointmentFrame extends Application {
 
     @Override
     public void start(Stage stage) {
+        this.service = ClientMain.service;
+
         BorderPane root = new BorderPane();
         root.setStyle("-fx-background-color: #f3f4f6;");
 

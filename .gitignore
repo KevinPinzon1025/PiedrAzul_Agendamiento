@@ -9,3 +9,6 @@ target/
 /Microkernel-piedaAzul-common/target/
 /plugins piedraAzul/report-json-plugin/target/
 /plugins piedraAzul/report-html-plugin/target/
+
+# Base de datos SQLite
+*.db
