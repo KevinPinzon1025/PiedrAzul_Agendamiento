@@ -1,8 +1,8 @@
 package co.unicauca.appointmentmanagement.service;
 
 import co.unicauca.microkernel.piedaazul.common.entity.AppointmentEntity;
-import co.unicauca.usermanagement.acces.AppointmentRepositorySQL;
 import co.unicauca.usermanagement.acces.IAppointmentRepository;
+import co.unicauca.usermanagement.acces.ProfessionalRepositorySQL;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
@@ -10,10 +10,12 @@ import java.util.List;
 public class AppointmentServiceImpl implements IAppointmentService {
 
     private final IAppointmentRepository repository;
+    private final ProfessionalRepositorySQL professionalRepository;
 
-    public AppointmentServiceImpl() {
-        this.repository = new AppointmentRepositorySQL();
-        this.repository.initializeDatabase();
+    public AppointmentServiceImpl(IAppointmentRepository repository,
+                                  ProfessionalRepositorySQL professionalRepository) {
+        this.repository = repository;
+        this.professionalRepository = professionalRepository;
     }
 
     @Override
@@ -28,7 +30,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
 
     @Override
     public List<String> getAllProfessionals() {
-        return repository.getAllProfessionals();
+        return professionalRepository.getActiveProfessionalNames();
     }
 
     @Override
