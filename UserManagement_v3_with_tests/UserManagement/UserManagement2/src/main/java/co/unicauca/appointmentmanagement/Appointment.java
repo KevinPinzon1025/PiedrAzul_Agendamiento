@@ -21,7 +21,7 @@ public class Appointment {
     }
 
     public Appointment(LocalDateTime schedulingDate, LocalDateTime appointmenDate, String observation,
-            Scheduler scheduler, Patient patient, Professional professional) {
+        Scheduler scheduler, Patient patient, Professional professional) {
         this.schedulingDate = schedulingDate;
         this.appointmenDate = appointmenDate;
         this.observation = observation;

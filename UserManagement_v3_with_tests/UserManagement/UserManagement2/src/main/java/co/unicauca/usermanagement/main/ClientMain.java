@@ -11,6 +11,7 @@ import co.unicauca.usermanagement.Patient;
 import co.unicauca.usermanagement.Professional;
 import co.unicauca.usermanagement.Scheduler;
 import co.unicauca.usermanagement.view.SearchAppointmentFrame;
+import co.unicauca.usermanagement.view.ScheduleAppointmentFrame;
 import java.time.format.DateTimeFormatter;
 import java.time.LocalDateTime;
 import java.util.Date;
