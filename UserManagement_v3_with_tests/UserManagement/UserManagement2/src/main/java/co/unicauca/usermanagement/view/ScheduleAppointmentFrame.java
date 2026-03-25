@@ -23,6 +23,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import co.unicauca.usermanagement.service.IPatientService;
+import co.unicauca.usermanagement.service.PatientServiceImpl;
+import co.unicauca.usermanagement.acces.PatientRepositorySQL;
 import co.unicauca.usermanagement.User;
 
 import co.unicauca.usermanagement.main.ClientMain;
@@ -37,6 +39,7 @@ public class ScheduleAppointmentFrame extends Application {
     private ComboBox<String> cbTime;
     private TextArea txtMotivo;
     private Label lblFeedback;
+    private  Stage stage;
 
     private final Set<LocalDate> holidays = new HashSet<>(Arrays.asList(
         LocalDate.of(2026, 1, 1),   // Año Nuevo
@@ -62,7 +65,10 @@ public class ScheduleAppointmentFrame extends Application {
     public void start(Stage stage) {
         this.service = ClientMain.service;
         this.patientService = ClientMain.patientService;
-        
+        if (this.patientService == null) {
+            this.patientService = new PatientServiceImpl(new PatientRepositorySQL());
+        }
+        this.stage = stage;
         BorderPane root = new BorderPane();
         root.setStyle("-fx-background-color: #f4f6fb;");
 
@@ -164,6 +170,7 @@ public class ScheduleAppointmentFrame extends Application {
                 "-fx-background-radius: 8;"
         );
         btnNewPatient.setOnAction(e -> openNewPatientWindow());
+
 
         Button btnConsultarHorarios = new Button("Consultar Horarios");
         btnConsultarHorarios.setPrefWidth(160);
@@ -300,8 +307,8 @@ public class ScheduleAppointmentFrame extends Application {
     }
 
     private void openNewPatientWindow() {
-        // TODO: Aquí debe llamarse o abrirse la vista de registro de paciente
-        lblFeedback.setText("TODO: abrir ventana de registro de nuevo paciente.");
+        RegisterNewPatientFrame frame = new RegisterNewPatientFrame(stage, this.patientService);
+        frame.show();
     }
 
     private void consultAvailableSchedules() {

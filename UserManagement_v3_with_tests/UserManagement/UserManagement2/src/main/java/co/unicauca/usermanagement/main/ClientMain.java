@@ -17,6 +17,8 @@ import co.unicauca.usermanagement.acces.PatientRepositorySQL;
 import co.unicauca.usermanagement.acces.ProfessionalRepositorySQL;
 import co.unicauca.usermanagement.view.SearchAppointmentFrame;
 import co.unicauca.usermanagement.view.ScheduleAppointmentFrame;
+
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -56,7 +58,7 @@ public class ClientMain {
         patient.setFirstLastName("Brito");
         patient.setSecondName("Andres");
         patient.setSecondLastName("Lopez");
-        patient.setBirthdate(new Date());
+        patient.setBirthdate(LocalDate.now());
         patient.setCellnumber(3201234567.0);
         patient.setGender('M');
 

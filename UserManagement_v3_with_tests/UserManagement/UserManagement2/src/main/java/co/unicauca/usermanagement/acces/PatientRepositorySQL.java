@@ -2,15 +2,18 @@
 package co.unicauca.usermanagement.acces;
 
 import co.unicauca.usermanagement.User;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import co.unicauca.usermanagement.Patient;
-import java.util.Date;
 
 /**
  *
@@ -18,7 +21,6 @@ import java.util.Date;
  */
 public class PatientRepositorySQL implements IUserRepository {
 
-    private static final String URL = "jdbc:sqlite:db/users.db";
     private Connection conn;
 
     public PatientRepositorySQL() {
@@ -26,16 +28,46 @@ public class PatientRepositorySQL implements IUserRepository {
         createTable();
         seedData();
     }
+
+    /**
+     * Ruta absoluta al fichero SQLite para no depender del directorio de trabajo del proceso
+     * (evita conn null si el JDBC falla y el NPE en createTable queda oculto en un catch genérico).
+     */
+    private static String buildJdbcUrl() {
+        try {
+            Path dbDir = Paths.get("db").toAbsolutePath().normalize();
+            Files.createDirectories(dbDir);
+            Path dbFile = dbDir.resolve("users.db");
+            return "jdbc:sqlite:" + dbFile.toString().replace('\\', '/');
+        } catch (Exception e) {
+            throw new IllegalStateException("No se pudo preparar el directorio db/ para SQLite", e);
+        }
+    }
     
     private void connect() {
         try {
-            conn = DriverManager.getConnection(URL);
-        } catch (Exception e) {
-            e.printStackTrace();
+            conn = DriverManager.getConnection(buildJdbcUrl());
+        } catch (SQLException e) {
+            throw new IllegalStateException(
+                    "No se pudo conectar a la base de datos SQLite (users.db). Compruebe el driver sqlite-jdbc.",
+                    e);
+        }
+    }
+
+    private void ensureConnection() {
+        try {
+            if (conn == null || conn.isClosed()) {
+                connect();
+            }
+        } catch (SQLException e) {
+            throw new IllegalStateException("Conexión SQL inválida o cerrada", e);
         }
     }
     
     private void createTable() {
+        if (conn == null) {
+            throw new IllegalStateException("Conexión SQL no inicializada tras connect()");
+        }
         String sql = """
             CREATE TABLE IF NOT EXISTS app_user (
                 id_user INTEGER PRIMARY KEY,
@@ -55,8 +87,8 @@ public class PatientRepositorySQL implements IUserRepository {
         
         try (Statement st = conn.createStatement()) {
             st.execute(sql);
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (SQLException e) {
+            throw new IllegalStateException("No se pudo crear la tabla app_user", e);
         }
     }
     
@@ -119,6 +151,8 @@ public class PatientRepositorySQL implements IUserRepository {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """;
         
+        ensureConnection();
+
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setDouble(1, p.getIdUser());
             ps.setString(2, p.getLogin());
@@ -142,6 +176,7 @@ public class PatientRepositorySQL implements IUserRepository {
 
     @Override
     public User findByLogin(String login) {
+        ensureConnection();
         String sql = "SELECT * FROM app_user WHERE login = ?";
         
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -159,6 +194,7 @@ public class PatientRepositorySQL implements IUserRepository {
 
     @Override
     public List<User> list() {
+        ensureConnection();
         List<User> users = new ArrayList<>();
         
         String sql = "SELECT * FROM app_user ORDER BY first_name, first_last_name";

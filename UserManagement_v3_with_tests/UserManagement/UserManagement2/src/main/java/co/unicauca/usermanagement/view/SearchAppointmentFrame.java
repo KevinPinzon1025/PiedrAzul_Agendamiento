@@ -306,7 +306,7 @@ public class SearchAppointmentFrame extends Application {
             lblTotal.setText("Total citas: 0");
             showAlert("La fecha seleccionada corresponde a un día festivo. Seleccione un día hábil.");
             return;
-}
+        }
 
         table.getItems().addAll(list);
         lblTotal.setText("Total citas: " + list.size());

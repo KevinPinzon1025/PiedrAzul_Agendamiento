@@ -1,5 +1,6 @@
 package co.unicauca.usermanagement;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 /**
@@ -9,16 +10,17 @@ import java.util.Date;
 public class Patient extends User {
     private String secondName;
     private String secondLastName;
-    private Date birthdate;
+    private LocalDate birthdate;
     private double cellnumber;
     private char gender; //F -Femenino, M - Masculino
+    private String email;
 
 //constructor sin parametros
     public Patient() {    
     }
 
 //constructor con parametros
-    public Patient(String secondName, String secondLastName, Date birthdate, double cellnumber, char gender, double idUser, String login, String passwordHash, String passwordSalt, boolean active, String firstName, String firstLastName) {
+    public Patient(String secondName, String secondLastName, LocalDate birthdate, double cellnumber, char gender, double idUser, String login, String passwordHash, String passwordSalt, boolean active, String firstName, String firstLastName) {
         super(idUser, login, passwordHash, passwordSalt, active, firstName, firstLastName);
         this.secondName = secondName;
         this.secondLastName = secondLastName;
@@ -44,11 +46,11 @@ public class Patient extends User {
         this.secondLastName = secondLastName;
     }
 
-    public Date getBirthdate() {
+    public LocalDate getBirthdate() {
         return birthdate;
     }
 
-    public void setBirthdate(Date birthdate) {
+    public void setBirthdate(LocalDate birthdate) {
         this.birthdate = birthdate;
     }
 
@@ -67,6 +69,13 @@ public class Patient extends User {
     public void setGender(char gender) {
         this.gender = gender;
     }
-    
+
+    public String getEmail(){
+        return this.email;
+    }
+
+    public void setEmail(String email){
+        this.email=email;
+    }
     
 }
