@@ -4,6 +4,8 @@ package co.unicauca.usermanagement.service;
 import co.unicauca.appointmentmanagement.Appointment;
 import co.unicauca.usermanagement.User;
 import co.unicauca.usermanagement.acces.IUserRepository;
+import co.unicauca.usermanagement.acces.ProfessionalRepositorySQL;
+import java.util.List;
 
 /**
  *
@@ -18,8 +20,13 @@ public class ProfessionalServiceImpl implements IProfessionalService {
     }
     
     @Override
+    public List<String> getAllProfessionals() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
+    @Override
     public boolean scheduleAppointment(Appointment newAppointment) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override

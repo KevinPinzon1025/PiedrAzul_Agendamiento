@@ -38,4 +38,6 @@ public class AppointmentServiceImpl implements IAppointmentService {
         DayOfWeek day = date.getDayOfWeek();
         return day != DayOfWeek.SATURDAY && day != DayOfWeek.SUNDAY;
     }
+    
+    
 }

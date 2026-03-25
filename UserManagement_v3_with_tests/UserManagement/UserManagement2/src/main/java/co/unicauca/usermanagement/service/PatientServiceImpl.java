@@ -4,6 +4,7 @@ package co.unicauca.usermanagement.service;
 import co.unicauca.appointmentmanagement.Appointment;
 import co.unicauca.usermanagement.User;
 import co.unicauca.usermanagement.acces.IUserRepository;
+import java.util.List;
 
 /**
  *
@@ -26,7 +27,7 @@ public class PatientServiceImpl implements IPatientService {
 
     @Override
     public boolean register(User newUser) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return repository.save(newUser);
     }
 
     @Override
@@ -42,6 +43,11 @@ public class PatientServiceImpl implements IPatientService {
     @Override
     public boolean delete(double idUser) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    @Override
+    public List<User> getAllPatients() {
+        return repository.list();
     }
     
 }

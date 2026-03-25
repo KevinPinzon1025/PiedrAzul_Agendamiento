@@ -1,5 +1,4 @@
 package co.unicauca.usermanagement.view;
-
 import co.unicauca.appointmentmanagement.service.AppointmentServiceImpl;
 import co.unicauca.appointmentmanagement.service.IAppointmentService;
 import co.unicauca.microkernel.piedaazul.common.entity.AppointmentEntity;
@@ -17,15 +16,20 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import co.unicauca.usermanagement.service.IPatientService;
+import co.unicauca.usermanagement.User;
+
 import co.unicauca.usermanagement.main.ClientMain;
 
 public class ScheduleAppointmentFrame extends Application {
-
     private IAppointmentService service;
+    private IPatientService patientService;
 
     private ComboBox<String> cbPatient;
     private ComboBox<String> cbProfessional;
@@ -34,9 +38,31 @@ public class ScheduleAppointmentFrame extends Application {
     private TextArea txtMotivo;
     private Label lblFeedback;
 
+    private final Set<LocalDate> holidays = new HashSet<>(Arrays.asList(
+        LocalDate.of(2026, 1, 1),   // Año Nuevo
+        LocalDate.of(2026, 1, 12),  // Reyes Magos trasladado
+        LocalDate.of(2026, 3, 23),  // San José trasladado
+        LocalDate.of(2026, 4, 2),   // Jueves Santo
+        LocalDate.of(2026, 4, 3),   // Viernes Santo
+        LocalDate.of(2026, 5, 1),   // Día del Trabajo
+        LocalDate.of(2026, 5, 18),  // Ascensión trasladada
+        LocalDate.of(2026, 6, 8),   // Corpus Christi trasladado
+        LocalDate.of(2026, 6, 15),  // Sagrado Corazón trasladado
+        LocalDate.of(2026, 6, 29),  // San Pedro y San Pablo trasladado
+        LocalDate.of(2026, 7, 20),  // Independencia
+        LocalDate.of(2026, 8, 7),   // Batalla de Boyacá
+        LocalDate.of(2026, 8, 17),  // Asunción trasladada
+        LocalDate.of(2026, 10, 12), // Día de la Raza trasladado
+        LocalDate.of(2026, 11, 2),  // Todos los Santos trasladado
+        LocalDate.of(2026, 11, 16), // Independencia de Cartagena trasladado
+        LocalDate.of(2026, 12, 8),  // Inmaculada Concepción
+        LocalDate.of(2026, 12, 25)  // Navidad
+));
     @Override
     public void start(Stage stage) {
         this.service = ClientMain.service;
+        this.patientService = ClientMain.patientService;
+        
         BorderPane root = new BorderPane();
         root.setStyle("-fx-background-color: #f4f6fb;");
 
@@ -46,7 +72,7 @@ public class ScheduleAppointmentFrame extends Application {
         root.setTop(topContainer);
         root.setCenter(createForm());
 
-        Scene scene = new Scene(root, 900, 650);
+        Scene scene = new Scene(root, 980, 680);
         stage.setScene(scene);
         stage.setTitle("Agendar Cita");
         stage.show();
@@ -57,7 +83,11 @@ public class ScheduleAppointmentFrame extends Application {
         header.setAlignment(Pos.CENTER_LEFT);
         header.setPadding(new Insets(15, 30, 15, 30));
         header.setSpacing(12);
-        header.setStyle("-fx-background-color: white; -fx-border-color: #d9d9d9; -fx-border-width: 0 0 1 0;");
+        header.setStyle(
+                "-fx-background-color: white;" +
+                "-fx-border-color: #d9d9d9;" +
+                "-fx-border-width: 0 0 1 0;"
+        );
 
         Label brand = new Label("Servicios médicos Piedrazul");
         brand.setFont(Font.font("System", 22));
@@ -66,8 +96,8 @@ public class ScheduleAppointmentFrame extends Application {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        Label userLabel = new Label("Miguel - Agendador");
-        userLabel.setStyle("-fx-text-fill: #2d6dcc; -fx-font-size: 14px;");
+        Label userLabel = new Label("Miguel - Profesional de la salud");
+        userLabel.setStyle("-fx-text-fill: #2d6dcc; -fx-font-size: 14px; -fx-font-weight: bold;");
 
         header.getChildren().addAll(brand, spacer, userLabel);
         return header;
@@ -75,7 +105,7 @@ public class ScheduleAppointmentFrame extends Application {
 
     private Node createToolbar() {
         HBox toolbar = new HBox();
-        toolbar.setPadding(new Insets(20, 40, 10, 40));
+        toolbar.setPadding(new Insets(20, 50, 10, 50));
         toolbar.setAlignment(Pos.CENTER_LEFT);
 
         Label title = new Label("Agendar Cita");
@@ -83,137 +113,215 @@ public class ScheduleAppointmentFrame extends Application {
         title.setStyle("-fx-text-fill: #222; -fx-font-weight: bold;");
 
         toolbar.getChildren().add(title);
-
         return toolbar;
     }
 
     private Node createForm() {
-        VBox wrapper = new VBox(15);
-        wrapper.setPadding(new Insets(20, 40, 30, 40));
+        VBox wrapper = new VBox();
+        wrapper.setAlignment(Pos.TOP_CENTER);
+        wrapper.setPadding(new Insets(10, 40, 30, 40));
 
-        GridPane form = new GridPane();
-        form.setHgap(18);
-        form.setVgap(16);
-        form.setAlignment(Pos.TOP_LEFT);
+        VBox card = new VBox(18);
+        card.setMaxWidth(760);
+        card.setPadding(new Insets(28));
+        card.setStyle(
+                "-fx-background-color: white;" +
+                "-fx-background-radius: 18;" +
+                "-fx-border-radius: 18;" +
+                "-fx-border-color: #dfe3eb;" +
+                "-fx-border-width: 1;" +
+                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.10), 14, 0.2, 0, 4);"
+        );
 
-        Label lblPatient = new Label("Paciente:");
-        cbPatient = new ComboBox<>();
-        cbPatient.setPrefWidth(300);
-
-        Label lblProfessional = new Label("Profesional:");
-        cbProfessional = new ComboBox<>();
-        cbProfessional.setPrefWidth(300);
-
-        Label lblDate = new Label("Fecha:");
-        datePicker = new DatePicker(LocalDate.now());
-        datePicker.setPrefWidth(300);
-
-        Label lblTime = new Label("Hora:");
-        cbTime = new ComboBox<>();
-        cbTime.setPrefWidth(300);
-
-        Label lblMotivo = new Label("Motivo:");
-        txtMotivo = new TextArea();
-        txtMotivo.setPromptText("Escribir motivo de la consulta...");
-        txtMotivo.setWrapText(true);
-        txtMotivo.setPrefHeight(150);
-        txtMotivo.setPrefWidth(620);
-
-        form.add(lblPatient, 0, 0);
-        form.add(cbPatient, 1, 0);
-        form.add(lblProfessional, 0, 1);
-        form.add(cbProfessional, 1, 1);
-        form.add(lblDate, 0, 2);
-        form.add(datePicker, 1, 2);
-        form.add(lblTime, 0, 3);
-        form.add(cbTime, 1, 3);
-        form.add(lblMotivo, 0, 4);
-        form.add(txtMotivo, 1, 4, 2, 1);
-
-        btnInitData();
-
-        cbProfessional.setOnAction(e -> refreshAvailableHours());
-        datePicker.setOnAction(e -> refreshAvailableHours());
-
-        HBox buttonRow = new HBox(12);
-        buttonRow.setAlignment(Pos.CENTER_LEFT);
-
-        Button btnSchedule = new Button("Registrar Cita");
-        btnSchedule.setStyle("-fx-background-color: #26a65b; -fx-text-fill: white; -fx-font-weight: bold;");
-        btnSchedule.setOnAction(e -> scheduleAppointment());
-
-        Button btnReset = new Button("Limpiar");
-        btnReset.setOnAction(e -> clearForm());
-
-        buttonRow.getChildren().addAll(btnSchedule, btnReset);
+        HBox topActions = createTopActions();
+        GridPane formGrid = createFormGrid();
+        HBox bottomActions = createBottomActions();
 
         lblFeedback = new Label();
-        lblFeedback.setStyle("-fx-text-fill: #0b5345; -fx-font-size: 13px;");
+        lblFeedback.setStyle("-fx-text-fill: #0b5345; -fx-font-size: 13px; -fx-font-weight: bold;");
 
-        VBox card = new VBox(14);
-        card.setPadding(new Insets(18));
-        card.setStyle("-fx-background-color: white; -fx-border-color: #ddd; -fx-border-radius: 8; -fx-background-radius: 8;");
-        card.getChildren().addAll(form, buttonRow, lblFeedback);
-
+        card.getChildren().addAll(topActions, formGrid, bottomActions, lblFeedback);
         wrapper.getChildren().add(card);
+
+        initData();
+
         return wrapper;
     }
 
-    private void btnInitData() {
-        // Cargar profesionales de la lógica existente
-        List<String> professionals = service.getAllProfessionals();
-        cbProfessional.getItems().clear();
-        cbProfessional.getItems().addAll(professionals);
+    private HBox createTopActions() {
+        HBox topActions = new HBox(12);
+        topActions.setAlignment(Pos.CENTER);
 
-        // Cargar pacientes desde la tabla de citas (necesita lógica de negocio real que recupere pacientes
-        // en el futuro, por ahora se usa la información de citas ya creadas)
-        Set<String> uniquePatients = service.getAll().stream()
-                .map(AppointmentEntity::getPatient)
-                .collect(Collectors.toSet());
-        cbPatient.getItems().clear();
-        cbPatient.getItems().addAll(uniquePatients);
+        Button btnNewPatient = new Button("Nuevo Paciente");
+        btnNewPatient.setPrefWidth(150);
+        btnNewPatient.setPrefHeight(34);
+        btnNewPatient.setStyle(
+                "-fx-background-color: white;" +
+                "-fx-text-fill: #2d6dcc;" +
+                "-fx-font-weight: bold;" +
+                "-fx-border-color: #2d6dcc;" +
+                "-fx-border-radius: 8;" +
+                "-fx-background-radius: 8;"
+        );
+        btnNewPatient.setOnAction(e -> openNewPatientWindow());
+
+        Button btnConsultarHorarios = new Button("Consultar Horarios");
+        btnConsultarHorarios.setPrefWidth(160);
+        btnConsultarHorarios.setPrefHeight(34);
+        btnConsultarHorarios.setStyle(
+                "-fx-background-color: white;" +
+                "-fx-text-fill: #5b8def;" +
+                "-fx-font-weight: bold;" +
+                "-fx-border-color: #b7cdfa;" +
+                "-fx-border-radius: 8;" +
+                "-fx-background-radius: 8;"
+        );
+        btnConsultarHorarios.setOnAction(e -> consultAvailableSchedules());
+
+        topActions.getChildren().addAll(btnNewPatient, btnConsultarHorarios);
+        return topActions;
     }
 
-    private void refreshAvailableHours() {
-        cbTime.getItems().clear();
+    private GridPane createFormGrid() {
+        GridPane form = new GridPane();
+        form.setHgap(18);
+        form.setVgap(16);
+        form.setAlignment(Pos.TOP_CENTER);
 
+        ColumnConstraints col1 = new ColumnConstraints();
+        col1.setPercentWidth(50);
+
+        ColumnConstraints col2 = new ColumnConstraints();
+        col2.setPercentWidth(50);
+
+        form.getColumnConstraints().addAll(col1, col2);
+
+        cbPatient = new ComboBox<>();
+        cbPatient.setPromptText("Seleccionar paciente");
+        cbPatient.setMaxWidth(Double.MAX_VALUE);
+        cbPatient.setPrefHeight(38);
+        List<User> patients = patientService.getAllPatients();
+        cbPatient.getItems().addAll(
+                patients.stream()
+                        .map(p -> p.getFirstName() + " " + p.getFirstLastName())
+                        .collect(Collectors.toList())
+        );
+        
+
+        cbProfessional = new ComboBox<>();
+        cbProfessional.setPromptText("Seleccionar profesional");
+        cbProfessional.setMaxWidth(Double.MAX_VALUE);
+        cbProfessional.setPrefHeight(38);
+        cbProfessional.getItems().addAll(service.getAllProfessionals());
+
+        datePicker = new DatePicker(LocalDate.now());
+        datePicker.setPromptText("Fecha");
+        datePicker.setMaxWidth(Double.MAX_VALUE);
+        datePicker.setPrefHeight(38);
+
+        cbTime = new ComboBox<>();
+        cbTime.setPromptText("Hora");
+        cbTime.setMaxWidth(Double.MAX_VALUE);
+        cbTime.setPrefHeight(38);
+
+        txtMotivo = new TextArea();
+        txtMotivo.setPromptText("Motivo de la consulta");
+        txtMotivo.setWrapText(true);
+        txtMotivo.setPrefHeight(120);
+
+        VBox patientBox = createFieldBox("Paciente", cbPatient);
+        VBox professionalBox = createFieldBox("Profesional", cbProfessional);
+        VBox dateBox = createFieldBox("Fecha", datePicker);
+        VBox timeBox = createFieldBox("Hora", cbTime);
+        VBox reasonBox = createFieldBox("Motivo", txtMotivo);
+
+        form.add(patientBox, 0, 0);
+        form.add(professionalBox, 1, 0); // profesional al frente de paciente
+        form.add(dateBox, 0, 1);
+        form.add(timeBox, 1, 1);
+        form.add(reasonBox, 0, 2, 2, 1);
+
+        return form;
+    }
+
+    private VBox createFieldBox(String labelText, Control field) {
+        Label label = new Label(labelText);
+        label.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #444;");
+
+        VBox box = new VBox(6);
+        box.getChildren().addAll(label, field);
+        VBox.setVgrow(field, Priority.NEVER);
+
+        return box;
+    }
+
+    private HBox createBottomActions() {
+        HBox actions = new HBox(12);
+        actions.setAlignment(Pos.CENTER);
+
+        Button btnRegister = new Button("Registrar");
+        btnRegister.setPrefWidth(150);
+        btnRegister.setPrefHeight(40);
+        btnRegister.setStyle(
+                "-fx-background-color: #25b05b;" +
+                "-fx-text-fill: white;" +
+                "-fx-font-weight: bold;" +
+                "-fx-background-radius: 8;"
+        );
+        btnRegister.setOnAction(e -> registerAppointment());
+
+        Button btnClear = new Button("Limpiar");
+        btnClear.setPrefWidth(120);
+        btnClear.setPrefHeight(40);
+        btnClear.setStyle(
+                "-fx-background-color: #eef2f7;" +
+                "-fx-text-fill: #333;" +
+                "-fx-font-weight: bold;" +
+                "-fx-background-radius: 8;" +
+                "-fx-border-color: #cfd6df;" +
+                "-fx-border-radius: 8;"
+        );
+        btnClear.setOnAction(e -> clearForm());
+
+        actions.getChildren().addAll(btnRegister, btnClear);
+        return actions;
+    }
+
+    private void initData() {
+
+        // TODO: Cargar horarios disponibles desde la capa de negocio
+        cbTime.getItems().addAll(
+                "08:00",
+                "08:30",
+                "09:00",
+                "09:30",
+                "10:00"
+        );
+    }
+
+    private void openNewPatientWindow() {
+        // TODO: Aquí debe llamarse o abrirse la vista de registro de paciente
+        lblFeedback.setText("TODO: abrir ventana de registro de nuevo paciente.");
+    }
+
+    private void consultAvailableSchedules() {
         String professional = cbProfessional.getValue();
         LocalDate date = datePicker.getValue();
 
         if (professional == null || date == null) {
+            lblFeedback.setText("Seleccione un profesional y una fecha para consultar horarios.");
             return;
         }
 
-        // TODO: Reemplazar con llamada a la lógica de negocio:
-        //  List<String> availableHours = yourBusinessService.getAvailableHours(professional, date);
-        //  cbTime.getItems().setAll(availableHours);
+        // TODO: Aquí debe hacerse la llamada a la lógica de negocio
+        // Ejemplo:
+        // List<String> horarios = appointmentService.getAvailableHours(professional, date);
+        // cbTime.getItems().setAll(horarios);
 
-        // Grabamos los horarios ocupados de las citas existentes
-        List<AppointmentEntity> booked = service.findByProfessionalAndDate(professional, date);
-        Set<String> occupied = booked.stream()
-                .map(a -> a.getAppointmenDate().toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm")))
-                .collect(Collectors.toSet());
-
-        // rango simulado de horas disponibles cada 30 minutos
-        LocalTime start = LocalTime.of(8, 0);
-        LocalTime end = LocalTime.of(17, 0);
-        List<String> allSlots = new ArrayList<>();
-        while (!start.isAfter(end)) {
-            allSlots.add(start.format(DateTimeFormatter.ofPattern("HH:mm")));
-            start = start.plusMinutes(30);
-        }
-
-        List<String> freeSlots = allSlots.stream()
-                .filter(slot -> !occupied.contains(slot))
-                .collect(Collectors.toList());
-
-        cbTime.getItems().addAll(freeSlots);
-        if (freeSlots.isEmpty()) {
-            cbTime.setPromptText("No hay horas disponibles");
-        }
+        lblFeedback.setText("TODO: consultar horarios disponibles para " + professional + " en la fecha " + date + ".");
     }
 
-    private void scheduleAppointment() {
+    private void registerAppointment() {
         String patient = cbPatient.getValue();
         String professional = cbProfessional.getValue();
         LocalDate date = datePicker.getValue();
@@ -225,31 +333,23 @@ public class ScheduleAppointmentFrame extends Application {
             return;
         }
 
-        // TODO: Reemplezar por llamada real a capa de negocio que cree la cita
-        //  Appointment appointment = new Appointment(...);
-        //  boolean ok = appointmentManager.scheduleAppointment(appointment);
-        //  if (ok) { ...}
+        // TODO: Aquí debe hacerse la llamada real a la lógica de negocio para registrar la cita
+        // Ejemplo:
+        // appointmentService.scheduleAppointment(patient, professional, date, time, motivo);
 
-        // Ejemplo de mensaje temporal:
-        lblFeedback.setText("Cita generada localmente: " + patient + " con " + professional + " el " + date + " a las " + time + ".");
-
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Agendar cita");
-        alert.setHeaderText("Agendamiento");
-        alert.setContentText("Se ha enviado la solicitud de agendamiento a la capa de negocio. (Implementar persistencia real)");
-        alert.showAndWait();
+        lblFeedback.setText("TODO: registrar cita de " + patient + " con " + professional + " el " + date + " a las " + time + ".");
     }
 
     private void clearForm() {
         cbPatient.getSelectionModel().clearSelection();
         cbProfessional.getSelectionModel().clearSelection();
         datePicker.setValue(LocalDate.now());
-        cbTime.getItems().clear();
+        cbTime.getSelectionModel().clearSelection();
         txtMotivo.clear();
         lblFeedback.setText("");
     }
 
     public static void main(String[] args) {
-        Application.launch(args);
+        launch(args);
     }
 }

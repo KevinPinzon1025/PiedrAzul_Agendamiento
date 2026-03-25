@@ -11,6 +11,9 @@ import co.unicauca.usermanagement.Patient;
 import co.unicauca.usermanagement.Professional;
 import co.unicauca.usermanagement.Scheduler;
 import co.unicauca.usermanagement.acces.AppointmentRepositorySQL;
+import co.unicauca.usermanagement.service.IPatientService;
+import co.unicauca.usermanagement.service.PatientServiceImpl;
+import co.unicauca.usermanagement.acces.PatientRepositorySQL;
 import co.unicauca.usermanagement.acces.ProfessionalRepositorySQL;
 import co.unicauca.usermanagement.view.SearchAppointmentFrame;
 import co.unicauca.usermanagement.view.ScheduleAppointmentFrame;
@@ -23,10 +26,9 @@ import javafx.application.Application;
 public class ClientMain {
 
     public static IAppointmentService service;
+    public static IPatientService patientService;
 
     public static void main(String[] args) {
-
-        Application.launch(ScheduleAppointmentFrame.class, args);
 
         AppointmentRepositorySQL appointmentRepository = new AppointmentRepositorySQL();
         appointmentRepository.initializeDatabase();
@@ -35,7 +37,12 @@ public class ClientMain {
 
         service = new AppointmentServiceImpl(appointmentRepository, professionalRepository);
 
-        Application.launch(SearchAppointmentFrame.class, args);
+        PatientRepositorySQL patientRepository = new PatientRepositorySQL();
+        patientService = new PatientServiceImpl(patientRepository);
+
+        Application.launch(ScheduleAppointmentFrame.class, args);
+
+        //Application.launch(SearchAppointmentFrame.class, args);
 
         AppointmentDirector director = new AppointmentDirector();
 
@@ -83,7 +90,7 @@ public class ClientMain {
                 "Consulta médica general"
         );
 
-        director.setAppointmentBuilder(manualBuilder);
+        director.setAppointmentBuilder(manualBuilder); 
         director.buildManualAppointment();
 
         Appointment manualAppointment = director.getAppointment();

@@ -64,11 +64,13 @@ public class ProfessionalRepositorySQL implements IUserRepository {
         """;
 
         try (PreparedStatement ps = conn.prepareStatement(insertSql)) {
+            
+            System.out.println("Sembrando profesionales...");
             insertProfessional(ps, "Dr. Jose Ignacio", 1);
             insertProfessional(ps, "Dr. Ibis Gonzales", 1);
             insertProfessional(ps, "Dr. Clara Ines", 1);
             insertProfessional(ps, "Dr. Maria Lopez", 1);
-            insertProfessional(ps, "Dr. Pedro Ruiz", 0);
+            insertProfessional(ps, "Dr. Pedro Ruiz", 1);
         } catch (Exception e) {
             e.printStackTrace();
         }
