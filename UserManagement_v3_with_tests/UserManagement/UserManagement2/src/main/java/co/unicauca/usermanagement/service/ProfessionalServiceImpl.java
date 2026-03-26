@@ -20,8 +20,8 @@ public class ProfessionalServiceImpl implements IProfessionalService {
     }
     
     @Override
-    public List<String> getAllProfessionals() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public List<User> getAllProfessionals() {
+        return repository.list();
     }
     
     @Override

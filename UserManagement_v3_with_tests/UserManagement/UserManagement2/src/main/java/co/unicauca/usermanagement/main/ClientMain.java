@@ -11,11 +11,15 @@ import co.unicauca.usermanagement.Patient;
 import co.unicauca.usermanagement.Professional;
 import co.unicauca.usermanagement.Scheduler;
 import co.unicauca.usermanagement.acces.AppointmentRepositorySQL;
+import co.unicauca.usermanagement.acces.IUserRepository;
 import co.unicauca.usermanagement.service.IPatientService;
 import co.unicauca.usermanagement.service.PatientServiceImpl;
 import co.unicauca.usermanagement.acces.PatientRepositorySQL;
 import co.unicauca.usermanagement.acces.ProfessionalRepositorySQL;
+import co.unicauca.usermanagement.service.IProfessionalService;
+import co.unicauca.usermanagement.service.ProfessionalServiceImpl;
 import co.unicauca.usermanagement.view.ScheduleAppointmentFrame;
+import co.unicauca.usermanagement.view.SearchAppointmentFrame;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -28,6 +32,7 @@ public class ClientMain {
 
     public static IAppointmentService service;
     public static IPatientService patientService;
+    public static IProfessionalService professionalService;
 
     public static void main(String[] args) {
 
@@ -40,6 +45,8 @@ public class ClientMain {
 
         PatientRepositorySQL patientRepository = new PatientRepositorySQL();
         patientService = new PatientServiceImpl(patientRepository);
+        
+        professionalService = new ProfessionalServiceImpl(professionalRepository);
 
         Application.launch(ScheduleAppointmentFrame.class, args);
 

@@ -1,5 +1,10 @@
 package co.unicauca.usermanagement.view;
 
+import co.unicauca.appointmentmanagement.Appointment;
+import co.unicauca.appointmentmanagement.service.IAppointmentChangeListener;
+import co.unicauca.appointmentmanagement.service.IAppointmentService;
+import co.unicauca.microkernel.piedaazul.common.entity.AppointmentEntity;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -7,19 +12,51 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class ConsultScheduleFrame {
 
     private Stage stage;
 
-    //  CONTENEDOR DINÁMICO (aquí cambia todo)
+    private IAppointmentService appointmentService;
+    private final IAppointmentChangeListener appointmentChangeListener = this::onAppointmentsChanged;
+
+    private String currentProfessional;
+    private LocalDate currentDate;
+
+    //private ComboBox<String> cbDoctor;
+    private DatePicker datePicker;
+    private TableView<String> tableAvailable;
+    private TableView<Appointment> tableOccupied;
+
+    private boolean showingAvailableSchedulesTab = true;
+
+    private final List<String> timeSlots = Arrays.asList(
+            "08:00",
+            "08:30",
+            "09:00",
+            "09:30",
+            "10:00"
+    );
+
+    //  CONTENEDOR DINÁMICO 
     private VBox contentContainer;
 
-    public ConsultScheduleFrame(Stage owner) {
+    //METODOS
+    public ConsultScheduleFrame(Stage owner, IAppointmentService service, String professional, LocalDate date) {
         stage = new Stage();
         stage.initOwner(owner);
         stage.initModality(Modality.APPLICATION_MODAL);
         stage.setTitle("Consultar horarios");
+
+        this.appointmentService = service;
+        this.currentProfessional = professional;
+        this.currentDate = date;
 
         StackPane root = new StackPane();
         root.setStyle("-fx-background-color: rgba(0,0,0,0.25);");
@@ -30,6 +67,20 @@ public class ConsultScheduleFrame {
 
         Scene scene = new Scene(root, 950, 600);
         stage.setScene(scene);
+
+        if (this.appointmentService != null) {
+            this.appointmentService.addAppointmentChangeListener(appointmentChangeListener);
+        }
+
+        stage.setOnCloseRequest(e -> {
+            if (this.appointmentService != null) {
+                this.appointmentService.removeAppointmentChangeListener(appointmentChangeListener);
+            }
+        });
+    }
+
+    public ConsultScheduleFrame(Stage owner) {
+        this(owner, null, null, null);
     }
 
     public void show() {
@@ -65,11 +116,14 @@ public class ConsultScheduleFrame {
 
     private HBox createTabButtons() {
 
-        HBox box = new HBox(10);
-        box.setAlignment(Pos.CENTER_LEFT);
+        HBox box = new HBox(15); 
+        box.setAlignment(Pos.CENTER); 
 
         Button btnSchedules = new Button("Horarios disponibles");
         Button btnAppointments = new Button("Mis citas");
+
+        btnSchedules.setPrefWidth(180);
+        btnAppointments.setPrefWidth(120);
 
         styleTabButton(btnSchedules, true);
         styleTabButton(btnAppointments, false);
@@ -77,19 +131,20 @@ public class ConsultScheduleFrame {
         btnSchedules.setOnAction(e -> {
             styleTabButton(btnSchedules, true);
             styleTabButton(btnAppointments, false);
+            showingAvailableSchedulesTab = true;
             showAvailableSchedules();
         });
 
         btnAppointments.setOnAction(e -> {
             styleTabButton(btnSchedules, false);
             styleTabButton(btnAppointments, true);
+            showingAvailableSchedulesTab = false;
             showMyAppointments();
         });
 
         box.getChildren().addAll(btnSchedules, btnAppointments);
         return box;
     }
-
     private void styleTabButton(Button btn, boolean active) {
         if (active) {
             btn.setStyle(
@@ -106,6 +161,58 @@ public class ConsultScheduleFrame {
         }
     }
 
+    private void onAppointmentsChanged() {
+        if (!showingAvailableSchedulesTab) return;
+        Platform.runLater(this::refreshSchedules);
+    }
+
+    private void refreshSchedules() {
+        if (appointmentService == null) return;
+        if (currentProfessional == null || currentDate == null) return;
+
+        if (tableAvailable != null) {
+            tableAvailable.getItems().clear();
+        }
+        if (tableOccupied != null) {
+            tableOccupied.getItems().clear();
+        }
+
+        // TRAER CITAS DEL BACKEND (YA SON Appointment)
+        List<Appointment> appointments =
+                appointmentService.findByProfessionalAndDate(currentProfessional, currentDate);
+
+        Set<String> occupiedTimes = new HashSet<>();
+        List<String> availableList = new ArrayList<>();
+        List<Appointment> occupiedList = new ArrayList<>();
+
+        for (Appointment appointment : appointments) {
+
+            if (appointment.getAppointmenDate() == null) continue;
+
+            String timeText = appointment.getAppointmenDate().toLocalTime().toString();
+
+            occupiedTimes.add(timeText);
+
+            // AHORA GUARDAMOS EL OBJETO COMPLETO
+            occupiedList.add(appointment);
+        }
+
+        // CALCULAR DISPONIBLES
+        for (String slot : timeSlots) {
+            if (!occupiedTimes.contains(slot)) {
+                availableList.add(slot);
+            }
+        }
+
+        // SETEAR TABLAS
+        if (tableAvailable != null) {
+            tableAvailable.getItems().setAll(availableList);
+        }
+
+        if (tableOccupied != null) {
+            tableOccupied.getItems().setAll(occupiedList);
+        }
+    }
     // =========================================================
     //  VISTA 1: HORARIOS DISPONIBLES
     // =========================================================
@@ -115,67 +222,74 @@ public class ConsultScheduleFrame {
 
         HBox filters = new HBox(10);
 
-        ComboBox<String> cbDoctor = new ComboBox<>();
-        cbDoctor.setPromptText("Seleccione profesional");
-        cbDoctor.setPrefWidth(200);
+        VBox availableBox = new VBox(6);
+        Label lblAvailable = new Label("Disponibles");
+        lblAvailable.setStyle("-fx-font-weight: bold;");
+        tableAvailable = new TableView<>();
+        tableAvailable.setPlaceholder(new Label("Sin datos"));
+        TableColumn<String, String> colAvailableDay = new TableColumn<>("Día");
+        TableColumn<String, String> colAvailableEntryHour = new TableColumn<>("Hora de Entrada");
+        TableColumn<String, String> colAvailableExitHour = new TableColumn<>("Hora de Salida");
+        
+        colAvailableDay.setCellValueFactory(c -> new javafx.beans.property.SimpleStringProperty(c.getValue()));
+        colAvailableEntryHour.setCellValueFactory(c -> new javafx.beans.property.SimpleStringProperty(c.getValue()));
+        colAvailableExitHour.setCellValueFactory(c -> new javafx.beans.property.SimpleStringProperty(c.getValue()));
 
-        DatePicker datePicker = new DatePicker();
-        datePicker.setPrefWidth(150);
+        tableAvailable.getColumns().add(colAvailableDay);
+        tableAvailable.getColumns().add(colAvailableEntryHour);
+        tableAvailable.getColumns().add(colAvailableExitHour);
+        availableBox.getChildren().addAll(lblAvailable, tableAvailable);
 
-        Button btnSearch = new Button("Consultar");
-        btnSearch.setStyle("-fx-background-color: #3b86df; -fx-text-fill: white;");
+       
+        tableOccupied = new TableView<>();
+        tableOccupied.setPlaceholder(new Label("Sin datos"));
+     
 
-        filters.getChildren().addAll(cbDoctor, datePicker, btnSearch);
-
-        TableView<String> table = new TableView<>();
-        table.setPlaceholder(new Label("Sin datos"));
-
-        TableColumn<String, String> colHour = new TableColumn<>("Hora disponible");
-        table.getColumns().add(colHour);
-
-        btnSearch.setOnAction(e -> {
-            // =========================================================
-            // TODO AQUÍ VA EL BACKEND
-            // service.getAvailableSchedules(...)
-            // =========================================================
-
-            table.getItems().clear();
-            table.getItems().add("08:00 AM");
-            table.getItems().add("09:00 AM");
-        });
-
-        contentContainer.getChildren().addAll(filters, table);
+        contentContainer.getChildren().addAll(filters, availableBox);
+        refreshSchedules();
     }
 
     // =========================================================
-    // 🔹 VISTA 2: MIS CITAS
+    // VISTA 2: MIS CITAS
     // =========================================================
     private void showMyAppointments() {
 
         contentContainer.getChildren().clear();
 
-        TableView<String> table = new TableView<>();
+        TableColumn<Appointment, String> colDate = new TableColumn<>("Fecha");
+        colDate.setCellValueFactory(c ->
+                new javafx.beans.property.SimpleStringProperty(
+                        c.getValue().getAppointmenDate().toLocalDate().toString()
+                )
+        );
 
-        TableColumn<String, String> colDoctor = new TableColumn<>("Médico");
-        TableColumn<String, String> colDate = new TableColumn<>("Fecha");
-        TableColumn<String, String> colTime = new TableColumn<>("Hora");
+        TableColumn<Appointment, String> colTime = new TableColumn<>("Hora");
+        colTime.setCellValueFactory(c ->
+                new javafx.beans.property.SimpleStringProperty(
+                        c.getValue().getAppointmenDate().toLocalTime().toString()
+                )
+        );
 
-        table.getColumns().addAll(colDoctor, colDate, colTime);
+        TableColumn<Appointment, String> colPatient = new TableColumn<>("Paciente");
+        colPatient.setCellValueFactory(c ->
+                new javafx.beans.property.SimpleStringProperty(
+                        c.getValue().getPatient() != null
+                                ? c.getValue().getPatient().getFirstName()
+                                : ""
+                )
+        );
 
-        Button btnLoad = new Button("Cargar citas");
-        btnLoad.setStyle("-fx-background-color: #3b86df; -fx-text-fill: white;");
+        TableColumn<Appointment, String> colReason = new TableColumn<>("Motivo");
+        colReason.setCellValueFactory(c ->
+                new javafx.beans.property.SimpleStringProperty(
+                        c.getValue().getObservation()
+                )
+        );
 
-        btnLoad.setOnAction(e -> {
-            // =========================================================
-            // 🔌 AQUÍ VA EL BACKEND
-            // service.getAppointmentsByPatient(...)
-            // =========================================================
+        tableOccupied.getColumns().addAll(colDate, colTime, colPatient, colReason);
 
-            table.getItems().clear();
-            table.getItems().add("Cita 1");
-            table.getItems().add("Cita 2");
-        });
 
-        contentContainer.getChildren().addAll(btnLoad, table);
+        contentContainer.getChildren().addAll(tableOccupied);
+        refreshSchedules();
     }
 }

@@ -1,10 +1,12 @@
 package co.unicauca.usermanagement.acces;
 
+import co.unicauca.usermanagement.Professional;
 import co.unicauca.usermanagement.User;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +28,26 @@ public class ProfessionalRepositorySQL implements IUserRepository {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    
+       private void ensureConnection() {
+        try {
+            if (conn == null || conn.isClosed()) {
+                connect();
+            }
+        } catch (SQLException e) {
+            throw new IllegalStateException("Conexión SQL inválida o cerrada", e);
+        }
+    }
+    
+    private User mapResultSetToProfessional(ResultSet rs) throws SQLException {
+        User user = new Professional();
+
+        user.setIdUser(rs.getInt("id"));
+        user.setFirstName(rs.getString("nombre"));
+        user.setActive(rs.getInt("activo") == 1);
+
+        return user;
     }
 
     private void createTable() {
@@ -118,6 +140,28 @@ public class ProfessionalRepositorySQL implements IUserRepository {
 
     @Override
     public List<User> list() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        ensureConnection();
+        List<User> professionals = new ArrayList<>();
+
+        String sql = """
+            SELECT *
+            FROM app_professional
+            WHERE activo = 1
+            ORDER BY nombre
+        """;
+
+        try (Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+
+            while (rs.next()) {
+                professionals.add(mapResultSetToProfessional(rs));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return professionals;
     }
+
 }

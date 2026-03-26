@@ -1,4 +1,5 @@
 package co.unicauca.usermanagement.view;
+import co.unicauca.appointmentmanagement.Appointment;
 import co.unicauca.appointmentmanagement.service.IAppointmentService;
 import javafx.application.Platform;
 import javafx.application.Application;
@@ -12,9 +13,14 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import co.unicauca.usermanagement.Patient;
+import co.unicauca.usermanagement.Professional;
+import co.unicauca.usermanagement.Scheduler;
 import co.unicauca.usermanagement.service.IPatientService;
 import co.unicauca.usermanagement.service.PatientServiceImpl;
 import co.unicauca.usermanagement.service.IPatientChangeListener;
@@ -22,10 +28,12 @@ import co.unicauca.usermanagement.acces.PatientRepositorySQL;
 import co.unicauca.usermanagement.User;
 
 import co.unicauca.usermanagement.main.ClientMain;
+import co.unicauca.usermanagement.service.IProfessionalService;
 
 public class ScheduleAppointmentFrame extends Application {
     private IAppointmentService service;
     private IPatientService patientService;
+    private IProfessionalService professionalService;
 
     private ComboBox<String> cbPatient;
     private ComboBox<String> cbProfessional;
@@ -43,6 +51,7 @@ public class ScheduleAppointmentFrame extends Application {
         if (this.patientService == null) {
             this.patientService = new PatientServiceImpl(new PatientRepositorySQL());
         }
+        this.professionalService = ClientMain.professionalService;
         this.stage = stage;
         BorderPane root = new BorderPane();
         root.setStyle("-fx-background-color: #f4f6fb;");
@@ -201,7 +210,11 @@ public class ScheduleAppointmentFrame extends Application {
         cbProfessional.setPromptText("Seleccionar profesional");
         cbProfessional.setMaxWidth(Double.MAX_VALUE);
         cbProfessional.setPrefHeight(38);
-        cbProfessional.getItems().addAll(service.getAllProfessionals());
+        List<User> professional = professionalService.getAllProfessionals();
+        cbProfessional.getItems().addAll(
+                professional.stream()
+                    .map(p -> p.getFirstName())
+                    .collect(Collectors.toList()));
 
         datePicker = new DatePicker(LocalDate.now());
         datePicker.setPromptText("Fecha");
@@ -292,6 +305,7 @@ public class ScheduleAppointmentFrame extends Application {
         RegisterNewPatientFrame frame = new RegisterNewPatientFrame(stage, this.patientService);
         frame.show();
     }
+    
 
     private void registerPatientObserver() {
         if (this.patientService == null) return;
@@ -323,6 +337,34 @@ public class ScheduleAppointmentFrame extends Application {
         }
     }
 
+    private Patient resolvePatientByDisplayName(String patientDisplayName) {
+        if (patientDisplayName == null || patientService == null) return null;
+
+        return patientService.getAllPatients().stream()
+                .filter(u -> u instanceof Patient)
+                .map(u -> (Patient) u)
+                .filter(p -> (p.getFirstName() + " " + p.getFirstLastName()).equals(patientDisplayName))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private Professional buildProfessionalFromDisplayName(String professionalDisplayName) {
+        Professional professional = new Professional();
+        professional.setFirstName(professionalDisplayName);
+        professional.setFirstLastName("");
+        return professional;
+    }
+
+    private Scheduler buildDefaultScheduler() {
+        // El backend requiere un agendador no nulo (columna NOT NULL).
+        // Por ahora se usa un valor fijo; idealmente debe venir del usuario autenticado.
+        Scheduler scheduler = new Scheduler();
+        scheduler.setFirstName("Miguel");
+        scheduler.setFirstLastName("");
+        scheduler.setIdUser(0);
+        return scheduler;
+    }
+
     private void consultAvailableSchedules() {
         
         String professional = cbProfessional.getValue();
@@ -333,31 +375,51 @@ public class ScheduleAppointmentFrame extends Application {
             return;
         }
 
-        // TODO: Aquí debe hacerse la llamada a la lógica de negocio
-        // Ejemplo:
-        // List<String> horarios = appointmentService.getAvailableHours(professional, date);
-        // cbTime.getItems().setAll(horarios);
-
-        lblFeedback.setText("TODO: consultar horarios disponibles para " + professional + " en la fecha " + date + ".");
+        ConsultScheduleFrame frame = new ConsultScheduleFrame(stage, service, professional, date);
+        frame.show();
+        
     }
 
     private void registerAppointment() {
-        String patient = cbPatient.getValue();
+        String patientDisplayName = cbPatient.getValue();
         String professional = cbProfessional.getValue();
         LocalDate date = datePicker.getValue();
         String time = cbTime.getValue();
         String motivo = txtMotivo.getText();
 
-        if (patient == null || professional == null || date == null || time == null || motivo == null || motivo.isBlank()) {
+        if (patientDisplayName == null || professional == null || date == null || time == null || motivo == null || motivo.isBlank()) {
             lblFeedback.setText("Por favor complete todos los campos antes de registrar la cita.");
             return;
         }
 
-        // TODO: Aquí debe hacerse la llamada real a la lógica de negocio para registrar la cita
-        // Ejemplo:
-        // appointmentService.scheduleAppointment(patient, professional, date, time, motivo);
+        Patient patient = resolvePatientByDisplayName(patientDisplayName);
+        if (patient == null) {
+            lblFeedback.setText("No se encontró el paciente seleccionado en la base de datos.");
+            return;
+        }
 
-        lblFeedback.setText("TODO: registrar cita de " + patient + " con " + professional + " el " + date + " a las " + time + ".");
+        Professional professionalEntity = buildProfessionalFromDisplayName(professional);
+        Scheduler scheduler = buildDefaultScheduler();
+
+        LocalDateTime appointmentDateTime = LocalDateTime.of(date, LocalTime.parse(time));
+
+        Appointment appointment = new Appointment(
+                LocalDateTime.now(),
+                appointmentDateTime,
+                motivo,
+                scheduler,
+                patient,
+                professionalEntity
+        );
+
+        boolean ok = service.scheduleAppointment(appointment);
+        if (ok) {
+            lblFeedback.setText("Cita registrada para " + patientDisplayName + " con " + professional + " el " + date + " a las " + time + ".");
+            cbTime.getSelectionModel().clearSelection();
+            txtMotivo.clear();
+        } else {
+            lblFeedback.setText("No se pudo registrar la cita. Intente nuevamente.");
+        }
     }
 
     private void clearForm() {

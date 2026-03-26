@@ -1,6 +1,7 @@
 
 package co.unicauca.usermanagement.service;
 
+import co.unicauca.usermanagement.User;
 import java.util.List;
 
 /**
@@ -8,5 +9,5 @@ import java.util.List;
  * @author Sam
  */
 public interface IProfessionalService extends IUserService {
-    List<String> getAllProfessionals();
+    List<User> getAllProfessionals();
 }

@@ -1,5 +1,6 @@
 package co.unicauca.usermanagement.view;
 
+import co.unicauca.appointmentmanagement.Appointment;
 import co.unicauca.appointmentmanagement.service.AppointmentServiceImpl;
 import co.unicauca.appointmentmanagement.service.IAppointmentService;
 import co.unicauca.microkernel.piedaazul.common.entity.AppointmentEntity;
@@ -30,7 +31,7 @@ public class SearchAppointmentFrame extends Application {
     private IAppointmentService service;
     
 
-    private TableView<AppointmentEntity> table;
+    private TableView<Appointment> table;
     private Label lblTotal;
     private ComboBox<String> cbProfessional;
     private DatePicker datePicker;
@@ -158,6 +159,7 @@ public class SearchAppointmentFrame extends Application {
         cbProfessional = new ComboBox<>();
         cbProfessional.setPromptText("Seleccione profesional");
         cbProfessional.setPrefWidth(260);
+        
         cbProfessional.getItems().addAll(service.getAllProfessionals());
 
         datePicker = new DatePicker();
@@ -178,27 +180,28 @@ public class SearchAppointmentFrame extends Application {
         table = new TableView<>();
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
-        TableColumn<AppointmentEntity, String> colId = new TableColumn<>("Identificación");
+        //TODO refactorizar las columnas de AppointmentEntity a Appointment
+        TableColumn<Appointment, String> colId = new TableColumn<>("Identificación");
         colId.setCellValueFactory(c ->
-                new SimpleStringProperty(String.valueOf(c.getValue().getCedPatient()))
+                new SimpleStringProperty(String.valueOf(c.getValue().getPatient().getIdUser()))
         );
 
-        TableColumn<AppointmentEntity, String> colDoctor = new TableColumn<>("Médico");
+        TableColumn<Appointment, String> colDoctor = new TableColumn<>("Médico");
         colDoctor.setCellValueFactory(c ->
-                new SimpleStringProperty(c.getValue().getProfessional())
+                new SimpleStringProperty(c.getValue().getProfessional().getFirstName())
         );
 
-        TableColumn<AppointmentEntity, String> colPatient = new TableColumn<>("Paciente");
+        TableColumn<Appointment, String> colPatient = new TableColumn<>("Paciente");
         colPatient.setCellValueFactory(c ->
-                new SimpleStringProperty(c.getValue().getPatient())
+                new SimpleStringProperty(c.getValue().getPatient().getFirstName())
         );
 
-        TableColumn<AppointmentEntity, String> colDate = new TableColumn<>("Fecha");
+        TableColumn<Appointment, String> colDate = new TableColumn<>("Fecha");
         colDate.setCellValueFactory(c ->
                 new SimpleStringProperty(c.getValue().getAppointmenDate().toLocalDate().toString())
         );
 
-        TableColumn<AppointmentEntity, String> colTime = new TableColumn<>("Hora");
+        TableColumn<Appointment, String> colTime = new TableColumn<>("Hora");
         colTime.setCellValueFactory(c ->
                 new SimpleStringProperty(c.getValue().getAppointmenDate().toLocalTime().toString())
         );
@@ -294,7 +297,8 @@ public class SearchAppointmentFrame extends Application {
             return;
         }
 
-        List<AppointmentEntity> list = service.findByProfessionalAndDate(professional, date);
+        //TODO refactorizar de AppointmentEntity a Appointment
+        List<Appointment> list = service.findByProfessionalAndDate(professional, date);
 
         if (list.isEmpty()) {
             lblTotal.setText("Total citas: 0");
@@ -308,7 +312,7 @@ public class SearchAppointmentFrame extends Application {
             return;
         }
 
-        table.getItems().addAll(list);
+        table.getItems().addAll(list); //TODO --> esto tambien hay que refactorizarlo?
         lblTotal.setText("Total citas: " + list.size());
     }
 

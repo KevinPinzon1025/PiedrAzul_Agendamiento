@@ -2,6 +2,9 @@ package co.unicauca.usermanagement.acces;
 
 import co.unicauca.appointmentmanagement.Appointment;
 import co.unicauca.microkernel.piedaazul.common.entity.AppointmentEntity;
+import co.unicauca.usermanagement.Patient;
+import co.unicauca.usermanagement.Professional;
+import co.unicauca.usermanagement.Scheduler;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -24,8 +27,8 @@ public class AppointmentRepositorySQL implements IAppointmentRepository {
     }
 
     @Override
-    public List<AppointmentEntity> getAll() {
-        List<AppointmentEntity> appointments = new ArrayList<>();
+    public List<Appointment> getAll() {
+        List<Appointment> appointments = new ArrayList<>();
 
         String sql = """
             SELECT
@@ -46,7 +49,7 @@ public class AppointmentRepositorySQL implements IAppointmentRepository {
              ResultSet rs = st.executeQuery(sql)) {
 
             while (rs.next()) {
-                appointments.add(mapResultSetToAppointmentEntity(rs));
+                appointments.add(mapResultSetToAppointment(rs));
             }
 
         } catch (Exception e) {
@@ -57,8 +60,8 @@ public class AppointmentRepositorySQL implements IAppointmentRepository {
     }
 
     @Override
-    public List<AppointmentEntity> findByProfessionalAndDate(String professional, LocalDate date) {
-        List<AppointmentEntity> result = new ArrayList<>();
+    public List<Appointment> findByProfessionalAndDate(String professional, LocalDate date) {
+        List<Appointment> result = new ArrayList<>();
 
         String sql = """
             SELECT
@@ -84,7 +87,7 @@ public class AppointmentRepositorySQL implements IAppointmentRepository {
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    result.add(mapResultSetToAppointmentEntity(rs));
+                    result.add(mapResultSetToAppointment(rs));
                 }
             }
 
@@ -120,21 +123,48 @@ public class AppointmentRepositorySQL implements IAppointmentRepository {
         return professionals;
     }
 
-    private AppointmentEntity mapResultSetToAppointmentEntity(ResultSet rs) throws Exception {
-        LocalDateTime fechaAgendamiento = LocalDateTime.parse(rs.getString("fecha_agendamiento"));
+    private Appointment mapResultSetToAppointment(ResultSet rs) throws Exception {
+
+        // Fechas
+        LocalDateTime schedulingDate = LocalDateTime.parse(rs.getString("fecha_agendamiento"));
         LocalDate fecha = LocalDate.parse(rs.getString("fecha"));
         LocalTime hora = LocalTime.parse(rs.getString("hora"));
-        LocalDateTime fechaCita = LocalDateTime.of(fecha, hora);
+        LocalDateTime appointmentDate = LocalDateTime.of(fecha, hora);
 
-        return new AppointmentEntity(
-                fechaAgendamiento,
-                fechaCita,
-                rs.getString("motivo"),
-                rs.getString("agendador"),
-                rs.getString("paciente"),
-                rs.getString("profesional"),
-                rs.getLong("documento_paciente")
-        );
+        // Datos simples
+        String motivo = rs.getString("motivo");
+        String agendadorStr = rs.getString("agendador");
+        String pacienteStr = rs.getString("paciente");
+        String profesionalStr = rs.getString("profesional");
+        long documentoPaciente = rs.getLong("documento_paciente");
+
+        // =========================================================
+        // Reconstrucción de objetos (básica)
+        // =========================================================
+
+        Scheduler scheduler = new Scheduler();
+        scheduler.setFirstName(agendadorStr); // simplificado
+
+        Patient patient = new Patient();
+        patient.setFirstName(pacienteStr); //️ simplificado
+        patient.setIdUser(documentoPaciente);
+
+        Professional professional = new Professional();
+        professional.setFirstName(profesionalStr); //️ simplificado
+
+        // =========================================================
+        // Construcción del Appointment
+        // =========================================================
+
+        Appointment appointment = new Appointment();
+        appointment.setSchedulingDate(schedulingDate);
+        appointment.setAppointmenDate(appointmentDate);
+        appointment.setObservation(motivo);
+        appointment.setScheduler(scheduler);
+        appointment.setPatient(patient);
+        appointment.setProfessional(professional);
+
+        return appointment;
     }
 
     private void createTables() {
@@ -256,7 +286,66 @@ public class AppointmentRepositorySQL implements IAppointmentRepository {
 
     @Override
     public boolean saveAppointment(Appointment newAppointment) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if (newAppointment == null) return false;
+
+        // Mapea el modelo a los campos esperados por la tabla app_cita.
+        String fechaAgendamiento = newAppointment.getSchedulingDate() != null
+                ? newAppointment.getSchedulingDate().toString()
+                : LocalDateTime.now().toString();
+
+        LocalDate fecha = newAppointment.getAppointmenDate() != null
+                ? newAppointment.getAppointmenDate().toLocalDate()
+                : null;
+        if (fecha == null) return false;
+
+        LocalTime hora = newAppointment.getAppointmenDate().toLocalTime();
+
+        String motivo = newAppointment.getObservation();
+        if (motivo == null) motivo = "";
+
+        Scheduler scheduler = newAppointment.getScheduler();
+        String agendador = (scheduler != null)
+                ? buildName("Sch", scheduler.getFirstName(), scheduler.getFirstLastName())
+                : "Sch";
+
+        Patient patient = newAppointment.getPatient();
+        String paciente = (patient != null)
+                ? buildName("pat.", patient.getFirstName(), patient.getFirstLastName())
+                : "pat.";
+
+        Professional professional = newAppointment.getProfessional();
+        String profesional = (professional != null)
+                ? buildName(professional.getFirstName(), null, professional.getFirstLastName())
+                : "";
+
+        long documentoPaciente = patient != null ? (long) patient.getIdUser() : 0L;
+
+        ensureDatabaseExists();
+
+        String insertSql = """
+            INSERT INTO app_cita
+            (fecha_agendamiento, fecha, hora, motivo, agendador, paciente, profesional, documento_paciente)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """;
+
+        try (Connection conn = DriverManager.getConnection(URL);
+             PreparedStatement ps = conn.prepareStatement(insertSql)) {
+
+            ps.setString(1, fechaAgendamiento);
+            ps.setString(2, fecha.toString());
+            ps.setString(3, hora.toString());
+            ps.setString(4, motivo);
+            ps.setString(5, agendador);
+            ps.setString(6, paciente);
+            ps.setString(7, profesional);
+            ps.setLong(8, documentoPaciente);
+
+            ps.executeUpdate();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     @Override
@@ -267,5 +356,38 @@ public class AppointmentRepositorySQL implements IAppointmentRepository {
     @Override
     public boolean updateAppointment(Appointment newAppointment) {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    private void ensureDatabaseExists() {
+        // Garantiza que la tabla exista al menos una vez (evita fallos en ejecución si no se llamó
+        // a initializeDatabase() desde ClientMain).
+        try (Connection conn = DriverManager.getConnection(URL);
+             Statement st = conn.createStatement()) {
+            String sql = """
+            CREATE TABLE IF NOT EXISTS app_cita (
+                id_cita INTEGER PRIMARY KEY AUTOINCREMENT,
+                fecha_agendamiento TEXT NOT NULL,
+                fecha TEXT NOT NULL,
+                hora TEXT NOT NULL,
+                motivo TEXT NOT NULL,
+                agendador TEXT NOT NULL,
+                paciente TEXT NOT NULL,
+                profesional TEXT NOT NULL,
+                documento_paciente INTEGER NOT NULL
+            )
+        """;
+            st.execute(sql);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private String buildName(String prefixOrFirst, String second, String last) {
+        // Construye nombres tolerando nulls.
+        String first = prefixOrFirst != null ? prefixOrFirst : "";
+        String mid = second != null ? second : "";
+        String l = last != null ? last : "";
+        String value = (first + (mid.isBlank() ? "" : " " + mid) + (l.isBlank() ? "" : " " + l)).trim();
+        return value;
     }
 }

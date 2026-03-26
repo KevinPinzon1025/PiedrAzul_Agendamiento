@@ -1,5 +1,12 @@
+/*
+ESTA CLASE QUEDA CON COMENTARIOS Y POR ENDE INUTILIZABLE AHORA MISMO.
+TODO: Mapear Appointment a AppointmentEntity para que funcione. Ahora mismo no es prioritario
+      asi que queda asi por lo pronto para que no marque error
+*/
+
 package co.unicauca.usermanagement.main;
 
+import co.unicauca.appointmentmanagement.Appointment;
 import co.unicauca.appointmentmanagement.service.IAppointmentService;
 import co.unicauca.microkernel.core.ReportService;
 import co.unicauca.microkernel.piedaazul.common.entity.AppointmentEntity;
@@ -42,7 +49,7 @@ public class Console {
     }
 
     private void handleReportGenerationOption() {
-        List<AppointmentEntity> appointments = appointmentService.getAll();
+        List<Appointment> appointments = appointmentService.getAll();
 
         scanner.nextLine();
 
@@ -68,10 +75,10 @@ public class Console {
         System.out.println("Nombre del archivo: ");
         String fileName = scanner.nextLine();
 
-        Report reportEntity = new Report(appointments, format, fileName);
+      //  Report reportEntity = new Report(appointments, format, fileName);
 
         try {
-            reportService.generarReporte(reportEntity);
+          //  reportService.generarReporte(reportEntity);
             System.out.println("Archivo creado...");
         } catch (Exception exception) {
             System.out.println("No fue posible exportar los datos. " + exception.getMessage());
