@@ -116,7 +116,7 @@ public class SearchAppointmentFrame extends Application {
     return header;
 }
 
-    private Node createToolbar() {
+  /*  private Node createToolbar() {
         HBox toolbar = new HBox();
         toolbar.setPadding(new Insets(25, 40, 10, 40));
         toolbar.setAlignment(Pos.CENTER_LEFT);
@@ -147,6 +147,77 @@ public class SearchAppointmentFrame extends Application {
         btnSearch.setOnAction(e -> searchByText());
 
         return toolbar;
+    }*/
+    
+    private Node createToolbar() {
+        VBox container = new VBox(10);
+        container.setPadding(new Insets(20, 40, 10, 40));
+
+        // 🔹 Barra de navegación
+        HBox navBar = new HBox(20);
+        navBar.setAlignment(Pos.CENTER_LEFT);
+
+        Button btnAgendar = new Button("Agendar cita");
+        btnAgendar.setStyle(
+                "-fx-background-color: transparent;" +
+                "-fx-text-fill: #555;" +
+                "-fx-font-size: 16px;"
+        );
+
+        Button btnListar = new Button("Listar citas");
+        btnListar.setStyle(
+                "-fx-background-color: transparent;" +
+                "-fx-text-fill: #2d6dcc;" +
+                "-fx-font-size: 16px;" +
+                "-fx-font-weight: bold;" +
+                "-fx-border-color: transparent transparent #2d6dcc transparent;" +
+                "-fx-border-width: 0 0 3 0;"
+        );
+
+        // Acción: ir a agendar
+        btnAgendar.setOnAction(e -> {
+            try {
+                new ScheduleAppointmentFrame().start(new Stage());
+                ((Stage) btnAgendar.getScene().getWindow()).close();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        });
+
+        navBar.getChildren().addAll(btnAgendar, btnListar);
+
+        // 🔹 Toolbar original
+        HBox toolbar = new HBox();
+        toolbar.setAlignment(Pos.CENTER_LEFT);
+        toolbar.setSpacing(20);
+
+        Label title = new Label("Lista de Citas");
+        title.setFont(Font.font("System", 30));
+        title.setStyle("-fx-text-fill: #222; -fx-font-weight: bold;");
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        txtSearch = new TextField();
+        txtSearch.setPromptText("Buscar por profesional");
+        txtSearch.setPrefWidth(220);
+
+        Button btnSearch = new Button("Buscar");
+
+        Button btnNew = new Button("Nueva Cita");
+        btnNew.setStyle(
+                "-fx-background-color: #3b86df;" +
+                "-fx-text-fill: white;" +
+                "-fx-font-weight: bold;"
+        );
+
+        toolbar.getChildren().addAll(title, spacer, txtSearch, btnSearch, btnNew);
+
+        btnSearch.setOnAction(e -> search());
+
+        container.getChildren().addAll(navBar, toolbar);
+
+        return container;
     }
 
     private Node createContent() {

@@ -29,8 +29,6 @@ public class ConsultScheduleFrame {
     private String currentProfessional;
     private LocalDate currentDate;
 
-    //private ComboBox<String> cbDoctor;
-    private DatePicker datePicker;
     private TableView<String> tableAvailable;
     private TableView<Appointment> tableOccupied;
 
@@ -181,6 +179,7 @@ public class ConsultScheduleFrame {
         List<Appointment> appointments =
                 appointmentService.findByProfessionalAndDate(currentProfessional, currentDate);
 
+      
         Set<String> occupiedTimes = new HashSet<>();
         List<String> availableList = new ArrayList<>();
         List<Appointment> occupiedList = new ArrayList<>();

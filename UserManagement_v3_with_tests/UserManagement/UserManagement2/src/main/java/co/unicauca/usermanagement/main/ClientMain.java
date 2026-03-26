@@ -1,17 +1,9 @@
 package co.unicauca.usermanagement.main;
 
 import co.unicauca.appointmentmanagement.Appointment;
-import co.unicauca.appointmentmanagement.service.AppointmentDirector;
 import co.unicauca.appointmentmanagement.service.AppointmentServiceImpl;
 import co.unicauca.appointmentmanagement.service.IAppointmentService;
-import co.unicauca.appointmentmanagement.service.ManualAppointmentBuilder;
-import co.unicauca.appointmentmanagement.service.RescheduleAppointmentBuilder;
-import co.unicauca.appointmentmanagement.service.SelfServiceAppointmentBuilder;
-import co.unicauca.usermanagement.Patient;
-import co.unicauca.usermanagement.Professional;
-import co.unicauca.usermanagement.Scheduler;
 import co.unicauca.usermanagement.acces.AppointmentRepositorySQL;
-import co.unicauca.usermanagement.acces.IUserRepository;
 import co.unicauca.usermanagement.service.IPatientService;
 import co.unicauca.usermanagement.service.PatientServiceImpl;
 import co.unicauca.usermanagement.acces.PatientRepositorySQL;
@@ -20,12 +12,7 @@ import co.unicauca.usermanagement.service.IProfessionalService;
 import co.unicauca.usermanagement.service.ProfessionalServiceImpl;
 import co.unicauca.usermanagement.view.ScheduleAppointmentFrame;
 import co.unicauca.usermanagement.view.SearchAppointmentFrame;
-
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import javafx.application.Application;
 
 public class ClientMain {
@@ -50,9 +37,9 @@ public class ClientMain {
 
         Application.launch(ScheduleAppointmentFrame.class, args);
 
-        //Application.launch(SearchAppointmentFrame.class, args);
+       // Application.launch(SearchAppointmentFrame.class, args);
 
-        AppointmentDirector director = new AppointmentDirector();
+       /* AppointmentDirector director = new AppointmentDirector();
 
         Patient patient = new Patient();
         patient.setIdUser(1059237786);
@@ -134,7 +121,7 @@ public class ClientMain {
 
         Appointment rescheduledAppointment = director.getAppointment();
         System.out.println("\nCITA REAGENDADA:");
-        printAppointment(rescheduledAppointment);
+        printAppointment(rescheduledAppointment);*/
     }
 
     private static void printAppointment(Appointment appointment) {

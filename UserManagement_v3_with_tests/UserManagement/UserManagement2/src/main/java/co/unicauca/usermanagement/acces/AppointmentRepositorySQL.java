@@ -178,8 +178,11 @@ public class AppointmentRepositorySQL implements IAppointmentRepository {
                 agendador TEXT NOT NULL,
                 paciente TEXT NOT NULL,
                 profesional TEXT NOT NULL,
-                documento_paciente INTEGER NOT NULL
+                documento_paciente INTEGER NOT NULL,
+                     
+                CONSTRAINT UQ_fecha_hora UNIQUE (fecha,hora)
             )
+            
         """;
 
         try (Connection conn = DriverManager.getConnection(URL);

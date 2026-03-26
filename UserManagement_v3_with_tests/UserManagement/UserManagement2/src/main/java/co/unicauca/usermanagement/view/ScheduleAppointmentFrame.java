@@ -44,6 +44,7 @@ public class ScheduleAppointmentFrame extends Application {
     private  Stage stage;
 
     private final IPatientChangeListener patientChangeListener = this::onPatientsChanged;
+    
     @Override
     public void start(Stage stage) {
         this.service = ClientMain.service;
@@ -100,7 +101,7 @@ public class ScheduleAppointmentFrame extends Application {
         return header;
     }
 
-    private Node createToolbar() {
+  /*  private Node createToolbar() {
         HBox toolbar = new HBox();
         toolbar.setPadding(new Insets(20, 50, 10, 50));
         toolbar.setAlignment(Pos.CENTER_LEFT);
@@ -110,6 +111,45 @@ public class ScheduleAppointmentFrame extends Application {
         title.setStyle("-fx-text-fill: #222; -fx-font-weight: bold;");
 
         toolbar.getChildren().add(title);
+        return toolbar;
+    }*/
+    
+    private Node createToolbar() {
+        HBox toolbar = new HBox();
+        toolbar.setPadding(new Insets(20, 50, 10, 50));
+        toolbar.setAlignment(Pos.CENTER_LEFT);
+        toolbar.setSpacing(20);
+
+        // Botón AGENDAR (activo)
+        Button btnAgendar = new Button("Agendar cita");
+        btnAgendar.setStyle(
+                "-fx-background-color: transparent;" +
+                "-fx-text-fill: #2d6dcc;" +
+                "-fx-font-size: 16px;" +
+                "-fx-font-weight: bold;" +
+                "-fx-border-color: transparent transparent #2d6dcc transparent;" +
+                "-fx-border-width: 0 0 3 0;"
+        );
+
+        // Botón LISTAR
+        Button btnListar = new Button("Listar citas");
+        btnListar.setStyle(
+                "-fx-background-color: transparent;" +
+                "-fx-text-fill: #555;" +
+                "-fx-font-size: 16px;"
+        );
+
+        // Acción: ir a listar citas
+        btnListar.setOnAction(e -> {
+            try {
+                new SearchAppointmentFrame().start(new Stage());
+                stage.close(); // cerrar actual
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        });
+
+        toolbar.getChildren().addAll(btnAgendar, btnListar);
         return toolbar;
     }
 
@@ -313,7 +353,7 @@ public class ScheduleAppointmentFrame extends Application {
     }
 
     private void onPatientsChanged() {
-        // JavaFX: siempre actualiza la UI en el hilo de JavaFX.
+        
         Platform.runLater(this::refreshPatientsComboBox);
     }
 

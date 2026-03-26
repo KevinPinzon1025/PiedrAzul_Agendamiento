@@ -6,7 +6,6 @@ package /*
 
 import co.unicauca.usermanagement.Scheduler;
 import co.unicauca.usermanagement.service.PasswordPolicy;
-import co.unicauca.usermanagement.service.IPatientService;
 import co.unicauca.usermanagement.service.ISchedulerService;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;

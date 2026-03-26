@@ -3,6 +3,8 @@ package co.unicauca.appointmentmanagement.service;
 import co.unicauca.appointmentmanagement.Appointment;
 import co.unicauca.microkernel.piedaazul.common.entity.AppointmentEntity;
 import co.unicauca.usermanagement.acces.IAppointmentRepository;
+import co.unicauca.usermanagement.acces.IProfessionalRepository;
+import co.unicauca.usermanagement.acces.IUserRepository;
 import co.unicauca.usermanagement.acces.ProfessionalRepositorySQL;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -12,12 +14,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class AppointmentServiceImpl implements IAppointmentService {
 
     private final IAppointmentRepository repository;
-    private final ProfessionalRepositorySQL professionalRepository;
+    private final IProfessionalRepository professionalRepository;
 
     private final List<IAppointmentChangeListener> appointmentChangeListeners = new CopyOnWriteArrayList<>();
 
     public AppointmentServiceImpl(IAppointmentRepository repository,
-                                  ProfessionalRepositorySQL professionalRepository) {
+                                  IProfessionalRepository professionalRepository) {
         this.repository = repository;
         this.professionalRepository = professionalRepository;
     }

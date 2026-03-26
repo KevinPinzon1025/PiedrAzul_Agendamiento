@@ -11,7 +11,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProfessionalRepositorySQL implements IUserRepository {
+public class ProfessionalRepositorySQL implements IProfessionalRepository {
 
     private Connection conn;
     private static final String URL = "jdbc:sqlite:db/users.db";
@@ -104,6 +104,7 @@ public class ProfessionalRepositorySQL implements IUserRepository {
         ps.executeUpdate();
     }
 
+    @Override
     public List<String> getActiveProfessionalNames() {
         List<String> professionals = new ArrayList<>();
 
