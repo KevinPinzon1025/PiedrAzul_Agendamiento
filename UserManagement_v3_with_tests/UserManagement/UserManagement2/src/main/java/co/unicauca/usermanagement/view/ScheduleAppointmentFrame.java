@@ -1,7 +1,6 @@
 package co.unicauca.usermanagement.view;
-import co.unicauca.appointmentmanagement.service.AppointmentServiceImpl;
 import co.unicauca.appointmentmanagement.service.IAppointmentService;
-import co.unicauca.microkernel.piedaazul.common.entity.AppointmentEntity;
+import javafx.application.Platform;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -13,17 +12,12 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import co.unicauca.usermanagement.service.IPatientService;
 import co.unicauca.usermanagement.service.PatientServiceImpl;
+import co.unicauca.usermanagement.service.IPatientChangeListener;
 import co.unicauca.usermanagement.acces.PatientRepositorySQL;
 import co.unicauca.usermanagement.User;
 
@@ -41,26 +35,7 @@ public class ScheduleAppointmentFrame extends Application {
     private Label lblFeedback;
     private  Stage stage;
 
-    private final Set<LocalDate> holidays = new HashSet<>(Arrays.asList(
-        LocalDate.of(2026, 1, 1),   // Año Nuevo
-        LocalDate.of(2026, 1, 12),  // Reyes Magos trasladado
-        LocalDate.of(2026, 3, 23),  // San José trasladado
-        LocalDate.of(2026, 4, 2),   // Jueves Santo
-        LocalDate.of(2026, 4, 3),   // Viernes Santo
-        LocalDate.of(2026, 5, 1),   // Día del Trabajo
-        LocalDate.of(2026, 5, 18),  // Ascensión trasladada
-        LocalDate.of(2026, 6, 8),   // Corpus Christi trasladado
-        LocalDate.of(2026, 6, 15),  // Sagrado Corazón trasladado
-        LocalDate.of(2026, 6, 29),  // San Pedro y San Pablo trasladado
-        LocalDate.of(2026, 7, 20),  // Independencia
-        LocalDate.of(2026, 8, 7),   // Batalla de Boyacá
-        LocalDate.of(2026, 8, 17),  // Asunción trasladada
-        LocalDate.of(2026, 10, 12), // Día de la Raza trasladado
-        LocalDate.of(2026, 11, 2),  // Todos los Santos trasladado
-        LocalDate.of(2026, 11, 16), // Independencia de Cartagena trasladado
-        LocalDate.of(2026, 12, 8),  // Inmaculada Concepción
-        LocalDate.of(2026, 12, 25)  // Navidad
-));
+    private final IPatientChangeListener patientChangeListener = this::onPatientsChanged;
     @Override
     public void start(Stage stage) {
         this.service = ClientMain.service;
@@ -78,9 +53,16 @@ public class ScheduleAppointmentFrame extends Application {
         root.setTop(topContainer);
         root.setCenter(createForm());
 
+        registerPatientObserver();
+
         Scene scene = new Scene(root, 980, 680);
         stage.setScene(scene);
         stage.setTitle("Agendar Cita");
+        stage.setOnCloseRequest(e -> {
+            if (this.patientService != null) {
+                this.patientService.removePatientChangeListener(patientChangeListener);
+            }
+        });
         stage.show();
     }
 
@@ -311,7 +293,38 @@ public class ScheduleAppointmentFrame extends Application {
         frame.show();
     }
 
+    private void registerPatientObserver() {
+        if (this.patientService == null) return;
+        this.patientService.addPatientChangeListener(patientChangeListener);
+    }
+
+    private void onPatientsChanged() {
+        // JavaFX: siempre actualiza la UI en el hilo de JavaFX.
+        Platform.runLater(this::refreshPatientsComboBox);
+    }
+
+    private void refreshPatientsComboBox() {
+        if (cbPatient == null || patientService == null) return;
+
+        String previousSelection = cbPatient.getValue();
+
+        List<User> patients = patientService.getAllPatients();
+        List<String> patientNames = patients.stream()
+                .map(p -> p.getFirstName() + " " + p.getFirstLastName())
+                .collect(Collectors.toList());
+
+        cbPatient.getItems().setAll(patientNames);
+
+        // Conserva selección si aún existe en la nueva lista.
+        if (previousSelection != null && patientNames.contains(previousSelection)) {
+            cbPatient.setValue(previousSelection);
+        } else {
+            cbPatient.getSelectionModel().clearSelection();
+        }
+    }
+
     private void consultAvailableSchedules() {
+        
         String professional = cbProfessional.getValue();
         LocalDate date = datePicker.getValue();
 

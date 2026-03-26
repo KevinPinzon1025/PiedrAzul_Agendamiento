@@ -15,7 +15,6 @@ import co.unicauca.usermanagement.service.IPatientService;
 import co.unicauca.usermanagement.service.PatientServiceImpl;
 import co.unicauca.usermanagement.acces.PatientRepositorySQL;
 import co.unicauca.usermanagement.acces.ProfessionalRepositorySQL;
-import co.unicauca.usermanagement.view.SearchAppointmentFrame;
 import co.unicauca.usermanagement.view.ScheduleAppointmentFrame;
 
 import java.time.LocalDate;

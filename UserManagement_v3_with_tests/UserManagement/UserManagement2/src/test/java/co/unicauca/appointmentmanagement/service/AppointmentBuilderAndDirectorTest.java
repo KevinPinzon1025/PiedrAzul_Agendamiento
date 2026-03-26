@@ -4,6 +4,7 @@ import co.unicauca.appointmentmanagement.Appointment;
 import co.unicauca.usermanagement.Patient;
 import co.unicauca.usermanagement.Professional;
 import co.unicauca.usermanagement.Scheduler;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
@@ -149,7 +150,7 @@ class AppointmentBuilderAndDirectorTest {
         return new Patient(
                 "Maria",
                 "Lopez",
-                new Date(),
+                LocalDate.now(),
                 3001234567.0,
                 'F',
                 1,

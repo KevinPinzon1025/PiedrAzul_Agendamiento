@@ -11,4 +11,12 @@ import java.util.List;
 public interface IPatientService extends IUserService {
     
     List<User> getAllPatients();
+
+    default void addPatientChangeListener(IPatientChangeListener listener) {
+        // default no-op (permite no romper implementaciones existentes)
+    }
+
+    default void removePatientChangeListener(IPatientChangeListener listener) {
+        // default no-op (permite no romper implementaciones existentes)
+    }
 }
