@@ -2,6 +2,7 @@ package co.unicauca.usermanagement.view;
 
 import co.unicauca.appointmentmanagement.Appointment;
 import co.unicauca.appointmentmanagement.service.IAppointmentService;
+import co.unicauca.usermanagement.AvailableSlot;
 import co.unicauca.usermanagement.controller.ConsultScheduleFrameController;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -11,6 +12,8 @@ import javafx.scene.layout.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import java.time.LocalDate;
+import java.util.List;
+import javafx.beans.property.SimpleStringProperty;
 
 public class ConsultScheduleFrame {
 
@@ -22,7 +25,7 @@ public class ConsultScheduleFrame {
     private String currentProfessional;
     private LocalDate currentDate;
 
-    private TableView<String> tableAvailable;
+       TableView<AvailableSlot> tableAvailable;
     private TableView<Appointment> tableOccupied;
 
     private boolean showingAvailableSchedulesTab = true;
@@ -164,17 +167,31 @@ public class ConsultScheduleFrame {
         lblAvailable.setStyle("-fx-font-weight: bold;");
         tableAvailable = new TableView<>();
         tableAvailable.setPlaceholder(new Label("Sin datos"));
-        TableColumn<String, String> colAvailableDay = new TableColumn<>("Día");
-        TableColumn<String, String> colAvailableEntryHour = new TableColumn<>("Hora de Entrada");
-        TableColumn<String, String> colAvailableExitHour = new TableColumn<>("Hora de Salida");
+       
         
-        colAvailableDay.setCellValueFactory(c -> new javafx.beans.property.SimpleStringProperty(c.getValue()));
-        colAvailableEntryHour.setCellValueFactory(c -> new javafx.beans.property.SimpleStringProperty(c.getValue()));
-        colAvailableExitHour.setCellValueFactory(c -> new javafx.beans.property.SimpleStringProperty(c.getValue()));
+        
+        
+        TableColumn<AvailableSlot, String> colAvailableDay = new TableColumn<>("Día");
+        TableColumn<AvailableSlot, String> colAvailableEntryHour = new TableColumn<>("Hora de Entrada");
+        TableColumn<AvailableSlot, String> colAvailableExitHour = new TableColumn<>("Hora de Salida");
 
+        colAvailableDay.setCellValueFactory(c ->
+                new SimpleStringProperty(c.getValue().getDay())
+        );
+
+        colAvailableEntryHour.setCellValueFactory(c ->
+                new SimpleStringProperty(c.getValue().getStartTime())
+        );
+
+        colAvailableExitHour.setCellValueFactory(c ->
+                new SimpleStringProperty(c.getValue().getEndTime())
+        );
+
+        
         tableAvailable.getColumns().add(colAvailableDay);
         tableAvailable.getColumns().add(colAvailableEntryHour);
         tableAvailable.getColumns().add(colAvailableExitHour);
+        
         availableBox.getChildren().addAll(lblAvailable, tableAvailable);
 
        
@@ -224,13 +241,12 @@ public class ConsultScheduleFrame {
 
         tableOccupied.getColumns().addAll(colDate, colTime, colPatient, colReason);
 
-
         contentContainer.getChildren().addAll(tableOccupied);
     }
 
     private class FxViewAdapter implements ConsultScheduleFrameController.View {
         @Override
-        public void setAvailableSlots(java.util.List<String> slots) {
+        public void setAvailableSlots(List<AvailableSlot> slots) {
             if (tableAvailable == null) return;
             tableAvailable.getItems().setAll(slots);
         }
@@ -238,7 +254,6 @@ public class ConsultScheduleFrame {
         @Override
         public void setAppointments(java.util.List<Appointment> appointments) {
             if (tableOccupied == null) return;
-            // En tab "Horarios disponibles" no mostramos tableOccupied; pero la dejamos lista para el tab "Mis citas".
             tableOccupied.getItems().setAll(appointments);
         }
     }

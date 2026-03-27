@@ -54,6 +54,7 @@ public class ScheduleAppointmentFrameController {
     private final IPatientService patientService;
     private final IProfessionalService professionalService;
 
+    //observer 
     private final IPatientChangeListener patientChangeListener = this::onPatientsChanged;
 
      private final Set<LocalDate> holidays = new HashSet<>(Arrays.asList(

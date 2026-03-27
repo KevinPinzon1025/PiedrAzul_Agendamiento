@@ -3,6 +3,7 @@ package co.unicauca.usermanagement.controller;
 import co.unicauca.appointmentmanagement.Appointment;
 import co.unicauca.appointmentmanagement.service.IAppointmentChangeListener;
 import co.unicauca.appointmentmanagement.service.IAppointmentService;
+import co.unicauca.usermanagement.AvailableSlot;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,7 +15,7 @@ import javafx.application.Platform;
 public class ConsultScheduleFrameController {
 
     public interface View {
-        void setAvailableSlots(List<String> slots);
+        void setAvailableSlots(List<AvailableSlot> slots);
         void setAppointments(List<Appointment> appointments);
     }
 
@@ -31,7 +32,10 @@ public class ConsultScheduleFrameController {
             "08:30",
             "09:00",
             "09:30",
-            "10:00"
+            "10:00",
+            "10:30",
+            "11:00",
+            "11:30"
     );
 
     private final IAppointmentChangeListener appointmentChangeListener = this::onAppointmentsChanged;
@@ -72,7 +76,6 @@ public class ConsultScheduleFrameController {
     }
 
     private void onAppointmentsChanged() {
-        // Siempre refrescamos (si la ventana está abierta), y el View decide qué mostrar.
         Platform.runLater(this::refresh);
     }
 
@@ -82,21 +85,30 @@ public class ConsultScheduleFrameController {
 
         List<Appointment> appointments = appointmentService.findByProfessionalAndDate(currentProfessional, currentDate);
 
-        // Disponibles/ocupados se calculan con slots fijos (mantiene la funcionalidad actual).
         Set<String> occupiedTimes = new HashSet<>();
         for (Appointment appointment : appointments) {
             if (appointment == null || appointment.getAppointmenDate() == null) continue;
             occupiedTimes.add(appointment.getAppointmenDate().toLocalTime().toString());
         }
 
-        List<String> availableList = new ArrayList<>();
-        for (String slot : timeSlots) {
-            if (!occupiedTimes.contains(slot)) {
-                availableList.add(slot);
-            }
+        List<AvailableSlot> availableList = new ArrayList<>();
+
+        for (int i = 0; i < timeSlots.size(); i++) {
+
+            String start = timeSlots.get(i);
+
+            if (occupiedTimes.contains(start)) continue;
+
+            // calcular hora fin
+            String end = (i + 1 < timeSlots.size())
+                    ? timeSlots.get(i + 1)
+                    : start; 
+
+            String day = currentDate.toString();
+
+            availableList.add(new AvailableSlot(day, start, end));
         }
 
-        // La vista puede estar mostrando cualquiera de los tabs; actualizamos ambos datasets.
         view.setAvailableSlots(availableList);
         view.setAppointments(appointments);
     }

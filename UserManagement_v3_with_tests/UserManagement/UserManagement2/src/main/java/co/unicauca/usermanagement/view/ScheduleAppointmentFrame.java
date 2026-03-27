@@ -89,7 +89,7 @@ public class ScheduleAppointmentFrame extends Application {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        Label userLabel = new Label("Miguel - Profesional de la salud");
+        Label userLabel = new Label("Miguel - Agendador");
         userLabel.setStyle("-fx-text-fill: #2d6dcc; -fx-font-size: 14px; -fx-font-weight: bold;");
 
         header.getChildren().addAll(brand, spacer, userLabel);
