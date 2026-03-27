@@ -12,3 +12,4 @@ target/
 
 # Base de datos SQLite
 *.db
+/UserManagement_v3_with_tests/UserManagement/UserManagement2/nbproject/

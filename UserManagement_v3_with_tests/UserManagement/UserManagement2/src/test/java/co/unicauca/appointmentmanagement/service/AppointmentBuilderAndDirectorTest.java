@@ -1,13 +1,11 @@
 package co.unicauca.appointmentmanagement.service;
 
-import co.unicauca.appointmentmanagement.Appointment;
 import co.unicauca.usermanagement.Patient;
 import co.unicauca.usermanagement.Professional;
 import co.unicauca.usermanagement.Scheduler;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
