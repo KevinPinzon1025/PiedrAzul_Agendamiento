@@ -1,6 +1,6 @@
 package co.unicauca.usermanagement.view;
 
-import co.unicauca.usermanagement.Patient;
+import co.unicauca.usermanagement.controller.RegisterNewPatientFrameController;
 import co.unicauca.usermanagement.service.IPatientService;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -16,6 +16,7 @@ public class RegisterNewPatientFrame {
 
     private Stage stage;
     private final IPatientService patientService;
+    private final RegisterNewPatientFrameController controller;
 
     private TextField txtId;
     private TextField txtLastName;
@@ -31,6 +32,7 @@ public class RegisterNewPatientFrame {
         stage.initModality(Modality.APPLICATION_MODAL);
         stage.setTitle("Registrar paciente");
         this.patientService = service;
+        this.controller = new RegisterNewPatientFrameController(new FxViewAdapter(), this.patientService);
 
         StackPane root = new StackPane();
         root.setStyle("-fx-background-color: rgba(255,255,255,0.25);");
@@ -187,63 +189,7 @@ public class RegisterNewPatientFrame {
         btnCancel.setOnAction(e -> stage.close());
 
         // Acción registrar
-        btnSave.setOnAction(e -> {
-
-            // Validar campos obligatorios
-            if (txtId.getText().isEmpty() ||
-                    txtLastName.getText().isEmpty() ||
-                    txtName.getText().isEmpty() ||
-                    cbGender.getValue() == null ||
-                    txtPhone.getText().isEmpty() ||
-                    dpBirth.getValue() == null) {
-
-                showAlert("Todos los campos son obligatorios excepto el email");
-                return;
-            }
-
-            try {
-                double patId = Double.parseDouble(txtId.getText());
-                String patLastName = txtLastName.getText();
-                String patName = txtName.getText();
-                String gender = cbGender.getValue();
-
-                char patGender;
-                if ("Masculino".equals(gender)) patGender = 'M';
-                else patGender = 'F';
-
-                double cellNumber = Double.parseDouble(txtPhone.getText());
-                String email = txtEmail.getText().isEmpty() ? null : txtEmail.getText();
-                LocalDate birthdate = dpBirth.getValue();
-
-                Patient newPatient = new Patient();
-
-                newPatient.setActive(true);
-                newPatient.setFirstName(patName);
-                newPatient.setFirstLastName(patLastName);
-                newPatient.setIdUser(patId);
-                newPatient.setBirthdate(birthdate);
-                newPatient.setCellnumber(cellNumber);
-                newPatient.setGender(patGender);
-                newPatient.setEmail(email);
-                newPatient.setPasswordHash("pending");
-                newPatient.setPasswordSalt("pending");
-                // login único exigido por app_user (NOT NULL UNIQUE): correo o identificador
-                String login = (email != null && !email.isBlank()) ? email : ("doc_" + txtId.getText());
-                newPatient.setLogin(login);
-
-                boolean registro = patientService.register(newPatient);
-
-                if (registro) {
-                    showAlert("Paciente registrado");
-                    stage.close();
-                } else {
-                    showAlert("Ocurrió un error al registrar");
-                }
-
-            } catch (NumberFormatException ex) {
-                showAlert("Los campos numéricos deben contener solo números");
-            }
-        });
+        btnSave.setOnAction(e -> controller.onRegister());
 
         box.getChildren().addAll(btnCancel, btnSave);
         return box;
@@ -272,5 +218,52 @@ public class RegisterNewPatientFrame {
         alert.setHeaderText(null);
         alert.setContentText(msg);
         alert.showAndWait();
+    }
+
+    private class FxViewAdapter implements RegisterNewPatientFrameController.View {
+        @Override
+        public String getIdText() {
+            return txtId != null ? txtId.getText() : null;
+        }
+
+        @Override
+        public String getLastName() {
+            return txtLastName != null ? txtLastName.getText() : null;
+        }
+
+        @Override
+        public String getName() {
+            return txtName != null ? txtName.getText() : null;
+        }
+
+        @Override
+        public String getGender() {
+            return cbGender != null ? cbGender.getValue() : null;
+        }
+
+        @Override
+        public String getPhoneText() {
+            return txtPhone != null ? txtPhone.getText() : null;
+        }
+
+        @Override
+        public String getEmail() {
+            return txtEmail != null ? txtEmail.getText() : null;
+        }
+
+        @Override
+        public LocalDate getBirthdate() {
+            return dpBirth != null ? dpBirth.getValue() : null;
+        }
+
+        @Override
+        public void showInfo(String message) {
+            showAlert(message);
+        }
+
+        @Override
+        public void close() {
+            stage.close();
+        }
     }
 }

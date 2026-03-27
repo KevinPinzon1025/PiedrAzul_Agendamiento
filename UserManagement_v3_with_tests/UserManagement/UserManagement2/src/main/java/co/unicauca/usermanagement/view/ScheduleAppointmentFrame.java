@@ -1,7 +1,5 @@
 package co.unicauca.usermanagement.view;
-import co.unicauca.appointmentmanagement.Appointment;
 import co.unicauca.appointmentmanagement.service.IAppointmentService;
-import javafx.application.Platform;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -13,27 +11,22 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.List;
-import java.util.stream.Collectors;
 
-import co.unicauca.usermanagement.Patient;
-import co.unicauca.usermanagement.Professional;
-import co.unicauca.usermanagement.Scheduler;
+import co.unicauca.usermanagement.controller.ScheduleAppointmentFrameController;
 import co.unicauca.usermanagement.service.IPatientService;
 import co.unicauca.usermanagement.service.PatientServiceImpl;
-import co.unicauca.usermanagement.service.IPatientChangeListener;
 import co.unicauca.usermanagement.acces.PatientRepositorySQL;
-import co.unicauca.usermanagement.User;
 
 import co.unicauca.usermanagement.main.ClientMain;
 import co.unicauca.usermanagement.service.IProfessionalService;
+import java.util.List;
 
 public class ScheduleAppointmentFrame extends Application {
     private IAppointmentService service;
     private IPatientService patientService;
     private IProfessionalService professionalService;
+
+    private ScheduleAppointmentFrameController controller;
 
     private ComboBox<String> cbPatient;
     private ComboBox<String> cbProfessional;
@@ -42,8 +35,6 @@ public class ScheduleAppointmentFrame extends Application {
     private TextArea txtMotivo;
     private Label lblFeedback;
     private  Stage stage;
-
-    private final IPatientChangeListener patientChangeListener = this::onPatientsChanged;
     
     @Override
     public void start(Stage stage) {
@@ -54,6 +45,14 @@ public class ScheduleAppointmentFrame extends Application {
         }
         this.professionalService = ClientMain.professionalService;
         this.stage = stage;
+
+        this.controller = new ScheduleAppointmentFrameController(
+                new FxViewAdapter(),
+                this.service,
+                this.patientService,
+                this.professionalService
+        );
+
         BorderPane root = new BorderPane();
         root.setStyle("-fx-background-color: #f4f6fb;");
 
@@ -63,16 +62,12 @@ public class ScheduleAppointmentFrame extends Application {
         root.setTop(topContainer);
         root.setCenter(createForm());
 
-        registerPatientObserver();
+        controller.onInit();
 
         Scene scene = new Scene(root, 980, 680);
         stage.setScene(scene);
         stage.setTitle("Agendar Cita");
-        stage.setOnCloseRequest(e -> {
-            if (this.patientService != null) {
-                this.patientService.removePatientChangeListener(patientChangeListener);
-            }
-        });
+        stage.setOnCloseRequest(e -> controller.onClose());
         stage.show();
     }
 
@@ -100,19 +95,6 @@ public class ScheduleAppointmentFrame extends Application {
         header.getChildren().addAll(brand, spacer, userLabel);
         return header;
     }
-
-  /*  private Node createToolbar() {
-        HBox toolbar = new HBox();
-        toolbar.setPadding(new Insets(20, 50, 10, 50));
-        toolbar.setAlignment(Pos.CENTER_LEFT);
-
-        Label title = new Label("Agendar Cita");
-        title.setFont(Font.font("System", 30));
-        title.setStyle("-fx-text-fill: #222; -fx-font-weight: bold;");
-
-        toolbar.getChildren().add(title);
-        return toolbar;
-    }*/
     
     private Node createToolbar() {
         HBox toolbar = new HBox();
@@ -140,14 +122,7 @@ public class ScheduleAppointmentFrame extends Application {
         );
 
         // Acción: ir a listar citas
-        btnListar.setOnAction(e -> {
-            try {
-                new SearchAppointmentFrame().start(new Stage());
-                stage.close(); // cerrar actual
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        });
+        btnListar.setOnAction(e -> controller.onNavigateToSearchAppointments());
 
         toolbar.getChildren().addAll(btnAgendar, btnListar);
         return toolbar;
@@ -200,7 +175,7 @@ public class ScheduleAppointmentFrame extends Application {
                 "-fx-border-radius: 8;" +
                 "-fx-background-radius: 8;"
         );
-        btnNewPatient.setOnAction(e -> openNewPatientWindow());
+        btnNewPatient.setOnAction(e -> controller.onNewPatient());
 
 
         Button btnConsultarHorarios = new Button("Consultar Horarios");
@@ -214,7 +189,7 @@ public class ScheduleAppointmentFrame extends Application {
                 "-fx-border-radius: 8;" +
                 "-fx-background-radius: 8;"
         );
-        btnConsultarHorarios.setOnAction(e -> consultAvailableSchedules());
+        btnConsultarHorarios.setOnAction(e -> controller.onConsultSchedules());
 
         topActions.getChildren().addAll(btnNewPatient, btnConsultarHorarios);
         return topActions;
@@ -238,23 +213,12 @@ public class ScheduleAppointmentFrame extends Application {
         cbPatient.setPromptText("Seleccionar paciente");
         cbPatient.setMaxWidth(Double.MAX_VALUE);
         cbPatient.setPrefHeight(38);
-        List<User> patients = patientService.getAllPatients();
-        cbPatient.getItems().addAll(
-                patients.stream()
-                        .map(p -> p.getFirstName() + " " + p.getFirstLastName())
-                        .collect(Collectors.toList())
-        );
         
 
         cbProfessional = new ComboBox<>();
         cbProfessional.setPromptText("Seleccionar profesional");
         cbProfessional.setMaxWidth(Double.MAX_VALUE);
         cbProfessional.setPrefHeight(38);
-        List<User> professional = professionalService.getAllProfessionals();
-        cbProfessional.getItems().addAll(
-                professional.stream()
-                    .map(p -> p.getFirstName())
-                    .collect(Collectors.toList()));
 
         datePicker = new DatePicker(LocalDate.now());
         datePicker.setPromptText("Fecha");
@@ -282,6 +246,34 @@ public class ScheduleAppointmentFrame extends Application {
         form.add(dateBox, 0, 1);
         form.add(timeBox, 1, 1);
         form.add(reasonBox, 0, 2, 2, 1);
+        
+        cbProfessional.valueProperty().addListener((obs, oldVal, newVal) -> {
+            controller.onDateOrProfessionalChanged();
+        });
+         
+        datePicker.valueProperty().addListener((obs, oldVal, newVal) -> {
+            controller.onDateOrProfessionalChanged();
+        });
+        
+        datePicker.valueProperty().addListener((obs, oldVal, newVal) -> {
+            controller.onDateChanged();
+        });
+
+        //mascara para fechas antiguas
+        datePicker.setDayCellFactory(picker -> new DateCell() {
+            @Override
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+
+                if (empty) return;
+
+                // Deshabilita fechas anteriores a hoy
+                if (date.isBefore(LocalDate.now())) {
+                    setDisable(true);
+                    setStyle("-fx-background-color: #eeeeee; -fx-text-fill: #999;");
+                }
+            }
+        });
 
         return form;
     }
@@ -310,7 +302,7 @@ public class ScheduleAppointmentFrame extends Application {
                 "-fx-font-weight: bold;" +
                 "-fx-background-radius: 8;"
         );
-        btnRegister.setOnAction(e -> registerAppointment());
+        btnRegister.setOnAction(e -> controller.onRegisterAppointment());
 
         Button btnClear = new Button("Limpiar");
         btnClear.setPrefWidth(120);
@@ -331,134 +323,117 @@ public class ScheduleAppointmentFrame extends Application {
 
     private void initData() {
 
-        // TODO: Cargar horarios disponibles desde la capa de negocio
-        cbTime.getItems().addAll(
-                "08:00",
-                "08:30",
-                "09:00",
-                "09:30",
-                "10:00"
-        );
     }
 
-    private void openNewPatientWindow() {
-        RegisterNewPatientFrame frame = new RegisterNewPatientFrame(stage, this.patientService);
-        frame.show();
-    }
-    
+    private class FxViewAdapter implements ScheduleAppointmentFrameController.View {
+        @Override
+        public Stage getStage() {
+            return stage;
+        }
 
-    private void registerPatientObserver() {
-        if (this.patientService == null) return;
-        this.patientService.addPatientChangeListener(patientChangeListener);
-    }
+        @Override
+        public void setPatients(java.util.List<String> patients) {
+            if (cbPatient == null) return;
+            String previous = cbPatient.getValue();
+            cbPatient.getItems().setAll(patients);
+            if (previous != null && patients.contains(previous)) {
+                cbPatient.setValue(previous);
+            } else {
+                cbPatient.getSelectionModel().clearSelection();
+            }
+        }
 
-    private void onPatientsChanged() {
+        @Override
+        public void setProfessionals(java.util.List<String> professionals) {
+            if (cbProfessional == null) return;
+            String previous = cbProfessional.getValue();
+            cbProfessional.getItems().setAll(professionals);
+            if (previous != null && professionals.contains(previous)) {
+                cbProfessional.setValue(previous);
+            } else {
+                cbProfessional.getSelectionModel().clearSelection();
+            }
+        }
+
+        @Override
+        public String getSelectedPatientDisplayName() {
+            return cbPatient != null ? cbPatient.getValue() : null;
+        }
+
+        @Override
+        public String getSelectedProfessionalDisplayName() {
+            return cbProfessional != null ? cbProfessional.getValue() : null;
+        }
+
+        @Override
+        public LocalDate getSelectedDate() {
+            return datePicker != null ? datePicker.getValue() : null;
+        }
+
+        @Override
+        public String getSelectedTime() {
+            return cbTime != null ? cbTime.getValue() : null;
+        }
+
+        @Override
+        public String getMotivo() {
+            return txtMotivo != null ? txtMotivo.getText() : null;
+        }
+
+        @Override
+        public void clearTimeSelection() {
+            if (cbTime != null) cbTime.getSelectionModel().clearSelection();
+        }
+
+        @Override
+        public void clearMotivo() {
+            if (txtMotivo != null) txtMotivo.clear();
+        }
+
+        @Override
+        public void showFeedback(String message) {
+            if (lblFeedback != null) lblFeedback.setText(message != null ? message : "");
+        }
+
+        @Override
+        public void openRegisterNewPatient(Stage owner, IPatientService patientService) {
+            RegisterNewPatientFrame frame = new RegisterNewPatientFrame(owner, patientService);
+            frame.show();
+        }
+
+        @Override
+        public void openConsultSchedules(Stage owner, IAppointmentService appointmentService, String professional, LocalDate date) {
+            ConsultScheduleFrame frame = new ConsultScheduleFrame(owner, appointmentService, professional, date);
+            frame.show();
+        }
+
+        @Override
+        public void openSearchAppointments() {
+            try {
+                new SearchAppointmentFrame().start(new Stage());
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+
+        @Override
+        public void closeCurrentWindow() {
+            if (stage != null) stage.close();
+        }
         
-        Platform.runLater(this::refreshPatientsComboBox);
-    }
+        @Override
+        public void setAvailableHours(List<String> hours) {
+            if (cbTime == null) return;
 
-    private void refreshPatientsComboBox() {
-        if (cbPatient == null || patientService == null) return;
+            String previous = cbTime.getValue();
 
-        String previousSelection = cbPatient.getValue();
+            cbTime.getItems().setAll(hours);
 
-        List<User> patients = patientService.getAllPatients();
-        List<String> patientNames = patients.stream()
-                .map(p -> p.getFirstName() + " " + p.getFirstLastName())
-                .collect(Collectors.toList());
-
-        cbPatient.getItems().setAll(patientNames);
-
-        // Conserva selección si aún existe en la nueva lista.
-        if (previousSelection != null && patientNames.contains(previousSelection)) {
-            cbPatient.setValue(previousSelection);
-        } else {
-            cbPatient.getSelectionModel().clearSelection();
-        }
-    }
-
-    private Patient resolvePatientByDisplayName(String patientDisplayName) {
-        if (patientDisplayName == null || patientService == null) return null;
-
-        return patientService.getAllPatients().stream()
-                .filter(u -> u instanceof Patient)
-                .map(u -> (Patient) u)
-                .filter(p -> (p.getFirstName() + " " + p.getFirstLastName()).equals(patientDisplayName))
-                .findFirst()
-                .orElse(null);
-    }
-
-    private Professional buildProfessionalFromDisplayName(String professionalDisplayName) {
-        Professional professional = new Professional();
-        professional.setFirstName(professionalDisplayName);
-        professional.setFirstLastName("");
-        return professional;
-    }
-
-    private Scheduler buildDefaultScheduler() {
-        // El backend requiere un agendador no nulo (columna NOT NULL).
-        // Por ahora se usa un valor fijo; idealmente debe venir del usuario autenticado.
-        Scheduler scheduler = new Scheduler();
-        scheduler.setFirstName("Miguel");
-        scheduler.setFirstLastName("");
-        scheduler.setIdUser(0);
-        return scheduler;
-    }
-
-    private void consultAvailableSchedules() {
-        
-        String professional = cbProfessional.getValue();
-        LocalDate date = datePicker.getValue();
-
-        if (professional == null || date == null) {
-            lblFeedback.setText("Seleccione un profesional y una fecha para consultar horarios.");
-            return;
-        }
-
-        ConsultScheduleFrame frame = new ConsultScheduleFrame(stage, service, professional, date);
-        frame.show();
-        
-    }
-
-    private void registerAppointment() {
-        String patientDisplayName = cbPatient.getValue();
-        String professional = cbProfessional.getValue();
-        LocalDate date = datePicker.getValue();
-        String time = cbTime.getValue();
-        String motivo = txtMotivo.getText();
-
-        if (patientDisplayName == null || professional == null || date == null || time == null || motivo == null || motivo.isBlank()) {
-            lblFeedback.setText("Por favor complete todos los campos antes de registrar la cita.");
-            return;
-        }
-
-        Patient patient = resolvePatientByDisplayName(patientDisplayName);
-        if (patient == null) {
-            lblFeedback.setText("No se encontró el paciente seleccionado en la base de datos.");
-            return;
-        }
-
-        Professional professionalEntity = buildProfessionalFromDisplayName(professional);
-        Scheduler scheduler = buildDefaultScheduler();
-
-        LocalDateTime appointmentDateTime = LocalDateTime.of(date, LocalTime.parse(time));
-
-        Appointment appointment = new Appointment(
-                LocalDateTime.now(),
-                appointmentDateTime,
-                motivo,
-                scheduler,
-                patient,
-                professionalEntity
-        );
-
-        boolean ok = service.scheduleAppointment(appointment);
-        if (ok) {
-            lblFeedback.setText("Cita registrada para " + patientDisplayName + " con " + professional + " el " + date + " a las " + time + ".");
-            cbTime.getSelectionModel().clearSelection();
-            txtMotivo.clear();
-        } else {
-            lblFeedback.setText("No se pudo registrar la cita. Intente nuevamente.");
+            if (previous != null && hours.contains(previous)) {
+                cbTime.setValue(previous);
+            } else {
+                cbTime.getSelectionModel().clearSelection();
+            }
         }
     }
 

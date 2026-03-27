@@ -1,10 +1,8 @@
 package co.unicauca.usermanagement.view;
 
 import co.unicauca.appointmentmanagement.Appointment;
-import co.unicauca.appointmentmanagement.service.IAppointmentChangeListener;
 import co.unicauca.appointmentmanagement.service.IAppointmentService;
-import co.unicauca.microkernel.piedaazul.common.entity.AppointmentEntity;
-import javafx.application.Platform;
+import co.unicauca.usermanagement.controller.ConsultScheduleFrameController;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -13,18 +11,13 @@ import javafx.scene.layout.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 public class ConsultScheduleFrame {
 
     private Stage stage;
 
     private IAppointmentService appointmentService;
-    private final IAppointmentChangeListener appointmentChangeListener = this::onAppointmentsChanged;
+    private final ConsultScheduleFrameController controller;
 
     private String currentProfessional;
     private LocalDate currentDate;
@@ -34,18 +27,10 @@ public class ConsultScheduleFrame {
 
     private boolean showingAvailableSchedulesTab = true;
 
-    private final List<String> timeSlots = Arrays.asList(
-            "08:00",
-            "08:30",
-            "09:00",
-            "09:30",
-            "10:00"
-    );
-
     //  CONTENEDOR DINÁMICO 
     private VBox contentContainer;
 
-    //METODOS
+    //Constructor
     public ConsultScheduleFrame(Stage owner, IAppointmentService service, String professional, LocalDate date) {
         stage = new Stage();
         stage.initOwner(owner);
@@ -55,6 +40,12 @@ public class ConsultScheduleFrame {
         this.appointmentService = service;
         this.currentProfessional = professional;
         this.currentDate = date;
+        this.controller = new ConsultScheduleFrameController(
+                new FxViewAdapter(),
+                this.appointmentService,
+                this.currentProfessional,
+                this.currentDate
+        );
 
         StackPane root = new StackPane();
         root.setStyle("-fx-background-color: rgba(0,0,0,0.25);");
@@ -66,21 +57,19 @@ public class ConsultScheduleFrame {
         Scene scene = new Scene(root, 950, 600);
         stage.setScene(scene);
 
-        if (this.appointmentService != null) {
-            this.appointmentService.addAppointmentChangeListener(appointmentChangeListener);
-        }
-
         stage.setOnCloseRequest(e -> {
-            if (this.appointmentService != null) {
-                this.appointmentService.removeAppointmentChangeListener(appointmentChangeListener);
-            }
+            controller.onClose();
         });
+
+        controller.onInit();
     }
 
     public ConsultScheduleFrame(Stage owner) {
         this(owner, null, null, null);
     }
 
+    //Metodos
+    
     public void show() {
         stage.showAndWait();
     }
@@ -131,6 +120,7 @@ public class ConsultScheduleFrame {
             styleTabButton(btnAppointments, false);
             showingAvailableSchedulesTab = true;
             showAvailableSchedules();
+            controller.onShowAvailableTab();
         });
 
         btnAppointments.setOnAction(e -> {
@@ -138,6 +128,7 @@ public class ConsultScheduleFrame {
             styleTabButton(btnAppointments, true);
             showingAvailableSchedulesTab = false;
             showMyAppointments();
+            controller.onShowAppointmentsTab();
         });
 
         box.getChildren().addAll(btnSchedules, btnAppointments);
@@ -159,59 +150,6 @@ public class ConsultScheduleFrame {
         }
     }
 
-    private void onAppointmentsChanged() {
-        if (!showingAvailableSchedulesTab) return;
-        Platform.runLater(this::refreshSchedules);
-    }
-
-    private void refreshSchedules() {
-        if (appointmentService == null) return;
-        if (currentProfessional == null || currentDate == null) return;
-
-        if (tableAvailable != null) {
-            tableAvailable.getItems().clear();
-        }
-        if (tableOccupied != null) {
-            tableOccupied.getItems().clear();
-        }
-
-        // TRAER CITAS DEL BACKEND (YA SON Appointment)
-        List<Appointment> appointments =
-                appointmentService.findByProfessionalAndDate(currentProfessional, currentDate);
-
-      
-        Set<String> occupiedTimes = new HashSet<>();
-        List<String> availableList = new ArrayList<>();
-        List<Appointment> occupiedList = new ArrayList<>();
-
-        for (Appointment appointment : appointments) {
-
-            if (appointment.getAppointmenDate() == null) continue;
-
-            String timeText = appointment.getAppointmenDate().toLocalTime().toString();
-
-            occupiedTimes.add(timeText);
-
-            // AHORA GUARDAMOS EL OBJETO COMPLETO
-            occupiedList.add(appointment);
-        }
-
-        // CALCULAR DISPONIBLES
-        for (String slot : timeSlots) {
-            if (!occupiedTimes.contains(slot)) {
-                availableList.add(slot);
-            }
-        }
-
-        // SETEAR TABLAS
-        if (tableAvailable != null) {
-            tableAvailable.getItems().setAll(availableList);
-        }
-
-        if (tableOccupied != null) {
-            tableOccupied.getItems().setAll(occupiedList);
-        }
-    }
     // =========================================================
     //  VISTA 1: HORARIOS DISPONIBLES
     // =========================================================
@@ -245,7 +183,6 @@ public class ConsultScheduleFrame {
      
 
         contentContainer.getChildren().addAll(filters, availableBox);
-        refreshSchedules();
     }
 
     // =========================================================
@@ -289,6 +226,20 @@ public class ConsultScheduleFrame {
 
 
         contentContainer.getChildren().addAll(tableOccupied);
-        refreshSchedules();
+    }
+
+    private class FxViewAdapter implements ConsultScheduleFrameController.View {
+        @Override
+        public void setAvailableSlots(java.util.List<String> slots) {
+            if (tableAvailable == null) return;
+            tableAvailable.getItems().setAll(slots);
+        }
+
+        @Override
+        public void setAppointments(java.util.List<Appointment> appointments) {
+            if (tableOccupied == null) return;
+            // En tab "Horarios disponibles" no mostramos tableOccupied; pero la dejamos lista para el tab "Mis citas".
+            tableOccupied.getItems().setAll(appointments);
+        }
     }
 }

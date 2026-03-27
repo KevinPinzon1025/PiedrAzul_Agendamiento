@@ -1,9 +1,7 @@
 package co.unicauca.usermanagement.view;
 
 import co.unicauca.appointmentmanagement.Appointment;
-import co.unicauca.appointmentmanagement.service.AppointmentServiceImpl;
 import co.unicauca.appointmentmanagement.service.IAppointmentService;
-import co.unicauca.microkernel.piedaazul.common.entity.AppointmentEntity;
 import javafx.application.Application;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.geometry.Insets;
@@ -17,50 +15,28 @@ import javafx.stage.Stage;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Arrays;
 
+import co.unicauca.usermanagement.controller.SearchAppointmentController;
 import co.unicauca.usermanagement.main.ClientMain;
 
 public class SearchAppointmentFrame extends Application {
 
     private IAppointmentService service;
-    
+
+    private SearchAppointmentController controller;
 
     private TableView<Appointment> table;
     private Label lblTotal;
     private ComboBox<String> cbProfessional;
     private DatePicker datePicker;
     private TextField txtSearch;
-    
-    private final Set<LocalDate> holidays = new HashSet<>(Arrays.asList(
-        LocalDate.of(2026, 1, 1),   // Año Nuevo
-        LocalDate.of(2026, 1, 12),  // Reyes Magos trasladado
-        LocalDate.of(2026, 3, 23),  // San José trasladado
-        LocalDate.of(2026, 4, 2),   // Jueves Santo
-        LocalDate.of(2026, 4, 3),   // Viernes Santo
-        LocalDate.of(2026, 5, 1),   // Día del Trabajo
-        LocalDate.of(2026, 5, 18),  // Ascensión trasladada
-        LocalDate.of(2026, 6, 8),   // Corpus Christi trasladado
-        LocalDate.of(2026, 6, 15),  // Sagrado Corazón trasladado
-        LocalDate.of(2026, 6, 29),  // San Pedro y San Pablo trasladado
-        LocalDate.of(2026, 7, 20),  // Independencia
-        LocalDate.of(2026, 8, 7),   // Batalla de Boyacá
-        LocalDate.of(2026, 8, 17),  // Asunción trasladada
-        LocalDate.of(2026, 10, 12), // Día de la Raza trasladado
-        LocalDate.of(2026, 11, 2),  // Todos los Santos trasladado
-        LocalDate.of(2026, 11, 16), // Independencia de Cartagena trasladado
-        LocalDate.of(2026, 12, 8),  // Inmaculada Concepción
-        LocalDate.of(2026, 12, 25)  // Navidad
-));
 
     @Override
     public void start(Stage stage) {
         this.service = ClientMain.service;
+        this.controller = new SearchAppointmentController(new FxViewAdapter(stage), this.service);
 
         BorderPane root = new BorderPane();
         root.setStyle("-fx-background-color: #f3f4f6;");
@@ -75,85 +51,55 @@ public class SearchAppointmentFrame extends Application {
         stage.setScene(scene);
         stage.setTitle("Buscar citas");
         stage.show();
+
+        controller.onInit();
     }
 
     private Node createHeader() {
-    HBox header = new HBox();
-    header.setAlignment(Pos.CENTER_LEFT);
-    header.setPadding(new Insets(18, 28, 18, 28));
-    header.setSpacing(15);
-    header.setStyle("-fx-background-color: white; -fx-border-color: #d9d9d9; -fx-border-width: 0 0 1 0;");
+        HBox header = new HBox();
+        header.setAlignment(Pos.CENTER_LEFT);
+        header.setPadding(new Insets(18, 28, 18, 28));
+        header.setSpacing(15);
+        header.setStyle("-fx-background-color: white; -fx-border-color: #d9d9d9; -fx-border-width: 0 0 1 0;");
 
-    Image logo = new Image(
-            getClass().getResourceAsStream("/logo_piedrazul.png")
-    );
+        Image logo = new Image(
+                getClass().getResourceAsStream("/logo_piedrazul.png")
+        );
 
-    ImageView logoView = new ImageView(logo);
-    logoView.setFitWidth(85);
-    logoView.setPreserveRatio(true);
+        ImageView logoView = new ImageView(logo);
+        logoView.setFitWidth(85);
+        logoView.setPreserveRatio(true);
 
-    VBox textLogoBox = new VBox(0);
+        VBox textLogoBox = new VBox(0);
 
-    Label logoTop = new Label("Servicios médicos");
-    logoTop.setStyle("-fx-text-fill: #5b8bd9; -fx-font-size: 14px;");
+        Label logoTop = new Label("Servicios médicos");
+        logoTop.setStyle("-fx-text-fill: #5b8bd9; -fx-font-size: 14px;");
 
-    Label logoBottom = new Label("Piedrazul");
-    logoBottom.setStyle("-fx-text-fill: #2d6dcc; -fx-font-size: 22px; -fx-font-weight: bold;");
+        Label logoBottom = new Label("Piedrazul");
+        logoBottom.setStyle("-fx-text-fill: #2d6dcc; -fx-font-size: 22px; -fx-font-weight: bold;");
 
-    textLogoBox.getChildren().addAll(logoTop, logoBottom);
+        textLogoBox.getChildren().addAll(logoTop, logoBottom);
 
-    HBox brandBox = new HBox(10);
-    brandBox.setAlignment(Pos.CENTER_LEFT);
-    brandBox.getChildren().addAll(logoView, textLogoBox);
-
-    Region spacer = new Region();
-    HBox.setHgrow(spacer, Priority.ALWAYS);
-
-    Label user = new Label("Miguel - Agendador");
-    user.setStyle("-fx-text-fill: #2d6dcc; -fx-font-size: 14px;");
-
-    header.getChildren().addAll(brandBox, spacer, user);
-    return header;
-}
-
-  /*  private Node createToolbar() {
-        HBox toolbar = new HBox();
-        toolbar.setPadding(new Insets(25, 40, 10, 40));
-        toolbar.setAlignment(Pos.CENTER_LEFT);
-        toolbar.setSpacing(20);
-
-        Label title = new Label("Lista de Citas");
-        title.setFont(Font.font("System", 30));
-        title.setStyle("-fx-text-fill: #222; -fx-font-weight: bold;");
+        HBox brandBox = new HBox(10);
+        brandBox.setAlignment(Pos.CENTER_LEFT);
+        brandBox.getChildren().addAll(logoView, textLogoBox);
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        txtSearch = new TextField();
-        txtSearch.setPromptText("Buscar por profesional");
-        txtSearch.setPrefWidth(220);
+        Label user = new Label("Miguel - Agendador");
+        user.setStyle("-fx-text-fill: #2d6dcc; -fx-font-size: 14px;");
 
-        Button btnSearch = new Button("Buscar");
+        header.getChildren().addAll(brandBox, spacer, user);
+        return header;
+    }
 
-        Button btnNew = new Button("Nueva Cita");
-        btnNew.setStyle(
-                "-fx-background-color: #3b86df;" +
-                "-fx-text-fill: white;" +
-                "-fx-font-weight: bold;"
-        );
-
-        toolbar.getChildren().addAll(title, spacer, txtSearch, btnSearch, btnNew);
-
-        btnSearch.setOnAction(e -> searchByText());
-
-        return toolbar;
-    }*/
     
     private Node createToolbar() {
         VBox container = new VBox(10);
         container.setPadding(new Insets(20, 40, 10, 40));
 
-        // 🔹 Barra de navegación
+        // Barra de navegación
         HBox navBar = new HBox(20);
         navBar.setAlignment(Pos.CENTER_LEFT);
 
@@ -175,18 +121,10 @@ public class SearchAppointmentFrame extends Application {
         );
 
         // Acción: ir a agendar
-        btnAgendar.setOnAction(e -> {
-            try {
-                new ScheduleAppointmentFrame().start(new Stage());
-                ((Stage) btnAgendar.getScene().getWindow()).close();
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        });
+        btnAgendar.setOnAction(e -> controller.onNavigateToSchedule());
 
         navBar.getChildren().addAll(btnAgendar, btnListar);
 
-        // 🔹 Toolbar original
         HBox toolbar = new HBox();
         toolbar.setAlignment(Pos.CENTER_LEFT);
         toolbar.setSpacing(20);
@@ -204,16 +142,9 @@ public class SearchAppointmentFrame extends Application {
 
         Button btnSearch = new Button("Buscar");
 
-        Button btnNew = new Button("Nueva Cita");
-        btnNew.setStyle(
-                "-fx-background-color: #3b86df;" +
-                "-fx-text-fill: white;" +
-                "-fx-font-weight: bold;"
-        );
+        toolbar.getChildren().addAll(title, spacer, txtSearch, btnSearch);
 
-        toolbar.getChildren().addAll(title, spacer, txtSearch, btnSearch, btnNew);
-
-        btnSearch.setOnAction(e -> search());
+        btnSearch.setOnAction(e -> controller.onSearchByText());
 
         container.getChildren().addAll(navBar, toolbar);
 
@@ -230,8 +161,6 @@ public class SearchAppointmentFrame extends Application {
         cbProfessional = new ComboBox<>();
         cbProfessional.setPromptText("Seleccione profesional");
         cbProfessional.setPrefWidth(260);
-        
-        cbProfessional.getItems().addAll(service.getAllProfessionals());
 
         datePicker = new DatePicker();
         datePicker.setPrefWidth(180);
@@ -240,7 +169,7 @@ public class SearchAppointmentFrame extends Application {
 
         Button btnConsultar = new Button("Consultar");
         btnConsultar.setStyle("-fx-background-color: #3b86df; -fx-text-fill: white;");
-        btnConsultar.setOnAction(e -> search());
+        btnConsultar.setOnAction(e -> controller.onSearch());
 
         filters.getChildren().addAll(cbProfessional, datePicker, btnConsultar);
 
@@ -251,33 +180,56 @@ public class SearchAppointmentFrame extends Application {
         table = new TableView<>();
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
-        //TODO refactorizar las columnas de AppointmentEntity a Appointment
         TableColumn<Appointment, String> colId = new TableColumn<>("Identificación");
         colId.setCellValueFactory(c ->
-                new SimpleStringProperty(String.valueOf(c.getValue().getPatient().getIdUser()))
+                new SimpleStringProperty(
+                        c.getValue().getPatient() != null
+                                ? String.valueOf((long) c.getValue().getPatient().getIdUser())
+                                : ""
+                )
         );
 
         TableColumn<Appointment, String> colDoctor = new TableColumn<>("Médico");
         colDoctor.setCellValueFactory(c ->
-                new SimpleStringProperty(c.getValue().getProfessional().getFirstName())
+                new SimpleStringProperty(
+                        c.getValue().getProfessional() != null
+                                ? c.getValue().getProfessional().getFirstName()
+                                : ""
+                )
         );
 
         TableColumn<Appointment, String> colPatient = new TableColumn<>("Paciente");
         colPatient.setCellValueFactory(c ->
-                new SimpleStringProperty(c.getValue().getPatient().getFirstName())
+                new SimpleStringProperty(
+                        c.getValue().getPatient() != null
+                                ? c.getValue().getPatient().getFirstName()
+                                : ""
+                )
         );
 
         TableColumn<Appointment, String> colDate = new TableColumn<>("Fecha");
         colDate.setCellValueFactory(c ->
-                new SimpleStringProperty(c.getValue().getAppointmenDate().toLocalDate().toString())
+                new SimpleStringProperty(
+                        c.getValue().getAppointmenDate() != null
+                                ? c.getValue().getAppointmenDate().toLocalDate().toString()
+                                : ""
+                )
         );
 
         TableColumn<Appointment, String> colTime = new TableColumn<>("Hora");
         colTime.setCellValueFactory(c ->
-                new SimpleStringProperty(c.getValue().getAppointmenDate().toLocalTime().toString())
+                new SimpleStringProperty(
+                        c.getValue().getAppointmenDate() != null
+                                ? c.getValue().getAppointmenDate().toLocalTime().toString()
+                                : ""
+                )
         );
 
-        table.getColumns().addAll(colId, colDoctor, colPatient, colDate, colTime);
+        table.getColumns().add(colId);
+        table.getColumns().add(colDoctor);
+        table.getColumns().add(colPatient);
+        table.getColumns().add(colDate);
+        table.getColumns().add(colTime);
 
         lblTotal = new Label("Total citas: 0");
 
@@ -296,13 +248,7 @@ public class SearchAppointmentFrame extends Application {
             if (empty || item == null) {
                 return;
             }
-
-            boolean isPastDate = item.isBefore(LocalDate.now());
-            boolean isWeekend = item.getDayOfWeek() == java.time.DayOfWeek.SATURDAY
-                    || item.getDayOfWeek() == java.time.DayOfWeek.SUNDAY;
-            boolean isHoliday = holidays.contains(item);
-
-            if (isPastDate || isWeekend || isHoliday) {
+            if (!controller.isDateSelectable(item)) {
                 setDisable(true);
                 setStyle("-fx-background-color: #f0f0f0; -fx-text-fill: #9e9e9e;");
             }
@@ -310,88 +256,83 @@ public class SearchAppointmentFrame extends Application {
     });
 }
 
-    private void searchByText() {
-        String text = txtSearch.getText();
-
-        if (text == null || text.isBlank()) {
-            showAlert("Escriba el nombre de un profesional para realizar la búsqueda.");
-            return;
-        }
-
-        String matchedProfessional = findProfessionalIgnoreCase(text.trim());
-
-        if (matchedProfessional == null) {
-            showAlert("El profesional ingresado no existe en la lista disponible.");
-            return;
-        }
-
-        cbProfessional.setValue(matchedProfessional);
-        search();
-    }
-
-    private String findProfessionalIgnoreCase(String text) {
-        for (String professional : cbProfessional.getItems()) {
-            if (professional.equalsIgnoreCase(text)) {
-                return professional;
-            }
-        }
-        return null;
-    }
-
-    private void search() {
-        table.getItems().clear();
-
-        String professional = cbProfessional.getValue();
-        LocalDate date = datePicker.getValue();
-
-        if (professional == null || professional.isBlank() || date == null) {
-            lblTotal.setText("Total citas: 0");
-            showAlert("Por favor seleccione un profesional y una fecha.");
-            return;
-        }
-
-        if (date.isBefore(LocalDate.now())) {
-            lblTotal.setText("Total citas: 0");
-            showAlert("No se permiten consultas con fechas anteriores al día de hoy.");
-            return;
-        }
-
-        if (date.getDayOfWeek() == DayOfWeek.SATURDAY || date.getDayOfWeek() == DayOfWeek.SUNDAY) {
-            lblTotal.setText("Total citas: 0");
-            showAlert("La fecha seleccionada no tiene atención disponible. Seleccione un día hábil.");
-            return;
-        }
-
-        if (!service.isDateAvailable(date)) {
-            lblTotal.setText("Total citas: 0");
-            showAlert("La fecha seleccionada no tiene atención disponible.");
-            return;
-        }
-
-        //TODO refactorizar de AppointmentEntity a Appointment
-        List<Appointment> list = service.findByProfessionalAndDate(professional, date);
-
-        if (list.isEmpty()) {
-            lblTotal.setText("Total citas: 0");
-            showAlert("No hay citas programadas para este profesional en esa fecha.");
-            return;
-        }
-        
-        if (holidays.contains(date)) {
-            lblTotal.setText("Total citas: 0");
-            showAlert("La fecha seleccionada corresponde a un día festivo. Seleccione un día hábil.");
-            return;
-        }
-
-        table.getItems().addAll(list); //TODO --> esto tambien hay que refactorizarlo?
-        lblTotal.setText("Total citas: " + list.size());
-    }
-
     private void showAlert(String msg) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Consulta");
         alert.setHeaderText("Resultado");
         alert.setContentText(msg);
         alert.showAndWait();
+    }
+
+    private class FxViewAdapter implements SearchAppointmentController.View {
+        private final Stage stage;
+
+        private FxViewAdapter(Stage stage) {
+            this.stage = stage;
+        }
+
+        @Override
+        public void setProfessionals(List<String> professionals) {
+            if (cbProfessional == null) return;
+            String previous = cbProfessional.getValue();
+            cbProfessional.getItems().setAll(professionals);
+            if (previous != null && professionals.contains(previous)) {
+                cbProfessional.setValue(previous);
+            }
+        }
+
+        @Override
+        public String getSelectedProfessional() {
+            return cbProfessional != null ? cbProfessional.getValue() : null;
+        }
+
+        @Override
+        public void setSelectedProfessional(String professional) {
+            if (cbProfessional != null) cbProfessional.setValue(professional);
+        }
+
+        @Override
+        public LocalDate getSelectedDate() {
+            return datePicker != null ? datePicker.getValue() : null;
+        }
+
+        @Override
+        public String getSearchText() {
+            return txtSearch != null ? txtSearch.getText() : null;
+        }
+
+        @Override
+        public void clearAppointments() {
+            if (table != null) table.getItems().clear();
+        }
+
+        @Override
+        public void setAppointments(List<Appointment> appointments) {
+            if (table != null) table.getItems().setAll(appointments);
+        }
+
+        @Override
+        public void setTotal(int total) {
+            if (lblTotal != null) lblTotal.setText("Total citas: " + total);
+        }
+
+        @Override
+        public void showAlert(String message) {
+            SearchAppointmentFrame.this.showAlert(message);
+        }
+
+        @Override
+        public void navigateToScheduleAppointment() {
+            try {
+                new ScheduleAppointmentFrame().start(new Stage());
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+
+        @Override
+        public void closeCurrentWindow() {
+            if (stage != null) stage.close();
+        }
     }
 }

@@ -11,7 +11,6 @@ import co.unicauca.usermanagement.acces.ProfessionalRepositorySQL;
 import co.unicauca.usermanagement.service.IProfessionalService;
 import co.unicauca.usermanagement.service.ProfessionalServiceImpl;
 import co.unicauca.usermanagement.view.ScheduleAppointmentFrame;
-import co.unicauca.usermanagement.view.SearchAppointmentFrame;
 import java.time.format.DateTimeFormatter;
 import javafx.application.Application;
 
@@ -37,9 +36,9 @@ public class ClientMain {
 
         Application.launch(ScheduleAppointmentFrame.class, args);
 
-       // Application.launch(SearchAppointmentFrame.class, args);
 
-       /* AppointmentDirector director = new AppointmentDirector();
+       /*
+        AppointmentDirector director = new AppointmentDirector();
 
         Patient patient = new Patient();
         patient.setIdUser(1059237786);
@@ -121,7 +120,8 @@ public class ClientMain {
 
         Appointment rescheduledAppointment = director.getAppointment();
         System.out.println("\nCITA REAGENDADA:");
-        printAppointment(rescheduledAppointment);*/
+        printAppointment(rescheduledAppointment);
+        */
     }
 
     private static void printAppointment(Appointment appointment) {

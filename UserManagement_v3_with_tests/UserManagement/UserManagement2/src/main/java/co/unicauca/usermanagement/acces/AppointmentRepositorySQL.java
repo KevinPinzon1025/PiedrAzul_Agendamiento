@@ -139,18 +139,18 @@ public class AppointmentRepositorySQL implements IAppointmentRepository {
         long documentoPaciente = rs.getLong("documento_paciente");
 
         // =========================================================
-        // Reconstrucción de objetos (básica)
+        // Reconstrucción de objetos 
         // =========================================================
 
         Scheduler scheduler = new Scheduler();
-        scheduler.setFirstName(agendadorStr); // simplificado
+        scheduler.setFirstName(agendadorStr);
 
         Patient patient = new Patient();
-        patient.setFirstName(pacienteStr); //️ simplificado
+        patient.setFirstName(pacienteStr); 
         patient.setIdUser(documentoPaciente);
 
         Professional professional = new Professional();
-        professional.setFirstName(profesionalStr); //️ simplificado
+        professional.setFirstName(profesionalStr); 
 
         // =========================================================
         // Construcción del Appointment

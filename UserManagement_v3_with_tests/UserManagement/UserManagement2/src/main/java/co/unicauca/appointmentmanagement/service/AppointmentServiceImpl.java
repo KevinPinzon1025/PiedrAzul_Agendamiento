@@ -1,11 +1,8 @@
 package co.unicauca.appointmentmanagement.service;
 
 import co.unicauca.appointmentmanagement.Appointment;
-import co.unicauca.microkernel.piedaazul.common.entity.AppointmentEntity;
 import co.unicauca.usermanagement.acces.IAppointmentRepository;
 import co.unicauca.usermanagement.acces.IProfessionalRepository;
-import co.unicauca.usermanagement.acces.IUserRepository;
-import co.unicauca.usermanagement.acces.ProfessionalRepositorySQL;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
@@ -73,7 +70,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
             try {
                 listener.onAppointmentsChanged();
             } catch (Exception ignored) {
-                // Un observador defectuoso no debe romper el flujo del modelo.
+                
             }
         }
     }
